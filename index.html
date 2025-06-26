@@ -778,27 +778,36 @@
             console.log("=== END CSV DEBUG ===");
         }
 
-        // Helper function to properly parse CSV lines with quoted values
+        // IMPROVED: Better CSV line parsing to handle quoted values with commas
         function parseCSVLine(line) {
             const values = [];
             let current = '';
             let inQuotes = false;
+            let i = 0;
             
-            for (let i = 0; i < line.length; i++) {
+            while (i < line.length) {
                 const char = line[i];
                 
                 if (char === '"') {
-                    inQuotes = !inQuotes;
+                    // Handle escaped quotes ("") within quoted strings
+                    if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+                        current += '"';
+                        i += 2; // Skip both quotes
+                        continue;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
                 } else if (char === ',' && !inQuotes) {
-                    values.push(current.trim());
+                    values.push(current.trim().replace(/^"|"$/g, '')); // Remove surrounding quotes
                     current = '';
                 } else {
                     current += char;
                 }
+                i++;
             }
             
             // Add the last value
-            values.push(current.trim());
+            values.push(current.trim().replace(/^"|"$/g, ''));
             
             return values;
         }
@@ -892,44 +901,49 @@
             updateProductCount();
         }
 
-        // IMPROVED: Parse CSV data into products with better column mapping
+        // IMPROVED: Parse CSV data with correct column mapping
         function parseCSVProducts(csvText) {
-            const lines = csvText.split('\n').filter(line => line.trim()); // Remove empty lines
+            const lines = csvText.split('\n').filter(line => line.trim());
             if (lines.length < 2) return [];
             
-            // Log the headers to debug
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
-            console.log('CSV Headers found:', headers);
-            
+            console.log('CSV Headers found:', lines[0]);
             const products = [];
             
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                // Better CSV parsing to handle commas within quoted strings
                 const values = parseCSVLine(line);
-                console.log(`Row ${i} values:`, values); // Debug log
+                console.log(`Row ${i} parsed values (${values.length} columns):`, values);
                 
-                if (values.length < 3) continue; // Skip rows with insufficient data
+                if (values.length < 6) {
+                    console.log(`Row ${i} skipped - insufficient columns (${values.length})`);
+                    continue;
+                }
                 
                 const product = {};
                 
-                // Map columns based on your Google Sheets structure
-                // Adjust these indices based on your actual sheet structure
-                if (values.length >= 6) {
-                    product.id = parseInt(values[0]) || i; // Column A: ID
-                    product.name = values[1]?.trim().replace(/"/g, '') || `Product ${i}`; // Column B: Name
-                    product.price = parseFloat(values[2]?.replace(/"/g, '')) || 0; // Column C: Price
-                    product.category = values[3]?.trim().toLowerCase().replace(/"/g, '') || 'general'; // Column D: Category
-                    // Skip column E (ID duplicate)
-                    product.description = values[5]?.trim().replace(/"/g, '') || product.name; // Column F: Full Description
+                try {
+                    // Based on your CSV structure: ID,Name,Price,Category,,Description,Image_URL
+                    product.id = parseInt(values[0]) || i;
+                    product.name = values[1]?.trim() || `Product ${i}`;
+                    product.price = parseFloat(values[2]) || 0;
+                    product.category = values[3]?.trim().toLowerCase() || 'general';
+                    // Skip column 4 (empty)
+                    product.description = values[5]?.trim() || product.name;
+                    product.imageUrl = values[6]?.trim() || '';
                     
-                    // Optional columns (adjust indices as needed)
-                    if (values.length > 6) {
-                        product.imageUrl = values[6]?.trim().replace(/"/g, '') || '';
-                        if (product.imageUrl.includes('drive.google.com')) {
-                            const fileIdMatch = product.imageUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                    // Fix Google Drive URLs
+                    if (product.imageUrl && product.imageUrl.includes('drive.google.com')) {
+                        // Convert Google Drive sharing URLs to direct image URLs
+                        if (product.imageUrl.includes('/file/d/')) {
+                            const fileIdMatch = product.imageUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+                            if (fileIdMatch) {
+                                product.imageUrl = `https://drive.google.com/uc?id=${fileIdMatch[1]}`;
+                            }
+                        } else {
+                            // Handle other Google Drive URL formats
+                            const fileIdMatch = product.imageUrl.match(/id=([a-zA-Z0-9-_]+)/);
                             if (fileIdMatch) {
                                 product.imageUrl = `https://drive.google.com/uc?id=${fileIdMatch[1]}`;
                             }
@@ -938,25 +952,26 @@
                     
                     // Set defaults
                     product.inStock = true;
-                    product.featured = i <= 8; // First 8 products are featured
-                    product.imageUrl = product.imageUrl || '';
+                    product.featured = i <= 8;
                     
-                } else {
-                    // Fallback for rows with fewer columns
-                    console.log(`Row ${i} has insufficient columns (${values.length}), skipping`);
-                    continue;
-                }
-                
-                // Only add products with valid name and price
-                if (product.name && product.name !== 'Product' && product.price > 0) {
-                    console.log(`✅ Parsed product: ${product.name} - ${product.description}`);
-                    products.push(product);
-                } else {
-                    console.log(`❌ Skipped invalid product in row ${i}:`, product);
+                    // Validate product data
+                    if (product.name && product.name.length > 1 && product.price > 0) {
+                        console.log(`✅ Valid product: "${product.name}" - "${product.description}" - GH₵${product.price} - Image: ${product.imageUrl ? 'Yes' : 'No'}`);
+                        products.push(product);
+                    } else {
+                        console.log(`❌ Invalid product data in row ${i}:`, {
+                            name: product.name,
+                            price: product.price,
+                            description: product.description
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.log(`❌ Error parsing row ${i}:`, error, values);
                 }
             }
             
-            console.log(`Parsed ${products.length} valid products`);
+            console.log(`Successfully parsed ${products.length} valid products`);
             return products;
         }
 
@@ -980,15 +995,16 @@
             });
         }
 
-        // IMPROVED: Create product HTML with better description handling
+        // IMPROVED: Create product HTML with better image error handling
         function createProductHTML(product) {
             const imageHTML = product.imageUrl ? 
-                `<img src="${product.imageUrl}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                 <span style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%;">Product Image</span>` :
-                `<span>Product Image</span>`;
+                `<img src="${product.imageUrl}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; console.log('Image failed to load for: ${product.name}');">
+                 <span style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; color: #9ca3af;">📷 Image Loading...</span>` :
+                `<span style="color: #9ca3af;">📷 No Image</span>`;
 
-            // Use description if available, otherwise use name
-            const displayDescription = product.description && product.description !== product.name 
+            // Use full description from Google Sheets
+            const displayDescription = product.description && product.description.trim() && product.description !== product.name 
                 ? product.description 
                 : `Premium ${product.name.toLowerCase()} - Quality guaranteed`;
 
