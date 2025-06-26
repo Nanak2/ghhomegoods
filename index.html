@@ -225,7 +225,10 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             border: 1px solid #e5e7eb;
             transition: all 0.3s;
-            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%; /* Stretch to fill grid height */
         }
         
         .product-card:hover {
