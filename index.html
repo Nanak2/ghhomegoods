@@ -552,15 +552,256 @@
             cursor: pointer;
         }
         
-        .empty-cart {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: #6b7280;
+        /* Checkout Modal Styles */
+        .checkout-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 1004;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
         }
         
-        .empty-cart-icon {
-            font-size: 3rem;
+        .checkout-content {
+            background: white;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .checkout-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .checkout-header h2 {
+            color: #000;
+            margin: 0;
+        }
+        
+        .checkout-body {
+            padding: 2rem;
+        }
+        
+        .checkout-section {
+            margin-bottom: 2rem;
+        }
+        
+        .checkout-section h3 {
+            color: #374151;
             margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #ea580c;
+        }
+        
+        .form-input.required {
+            border-left: 4px solid #ea580c;
+        }
+        
+        .order-summary {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #ea580c;
+        }
+        
+        .payment-instructions {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .payment-instructions h4 {
+            color: #92400e;
+            margin-bottom: 1rem;
+        }
+        
+        .payment-detail {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+            border-left: 4px solid #ea580c;
+        }
+        
+        .payment-detail strong {
+            color: #ea580c;
+        }
+        
+        .order-confirmation {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .order-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ea580c;
+            margin: 1rem 0;
+        }
+        
+        .order-status {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            display: inline-block;
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+
+        /* Admin Order Management */
+        .orders-container {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin: 2rem 0;
+        }
+        
+        .orders-header {
+            padding: 2rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .order-card {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 1.5rem 2rem;
+        }
+        
+        .order-card:last-child {
+            border-bottom: none;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .order-id {
+            font-weight: bold;
+            color: #ea580c;
+        }
+        
+        .order-status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-confirmed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .order-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .order-info {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-confirm {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .btn-complete {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: #dc2626;
+            color: white;
         }
             background: linear-gradient(135deg, #000000 0%, #1f2937 100%);
             color: white;
@@ -748,6 +989,19 @@
             </div>
         </div>
 
+        <!-- Checkout Modal -->
+        <div id="checkoutModal" class="checkout-modal">
+            <div class="checkout-content">
+                <div class="checkout-header">
+                    <h2>📋 Checkout</h2>
+                    <button class="close-cart" onclick="closeCheckout()">&times;</button>
+                </div>
+                <div class="checkout-body" id="checkoutBody">
+                    <!-- Checkout content will be loaded here -->
+                </div>
+            </div>
+        </div>
+
         <!-- Header -->
         <header class="header">
             <div class="header-content">
@@ -760,7 +1014,7 @@
                     <ul class="nav-list">
                         <li><button class="nav-button active" id="homeBtn" onclick="showHome()">Home</button></li>
                         <li><button class="nav-button" id="shopBtn" onclick="showShop()">Shop</button></li>
-                        <li><button class="nav-button hidden" id="adminBtn" onclick="showAdmin()">Admin (0)</button></li>
+                        <li><button class="nav-button hidden" id="adminBtn" onclick="showAdmin()">Admin (<span id="adminOrderCount">0</span>)</button></li>
                         <li><button class="nav-button hidden" id="logoutBtn" onclick="adminLogout()" style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(220, 38, 38, 0.5);">Logout</button></li>
                     </ul>
                     
@@ -859,16 +1113,16 @@
                     </div>
                 </div>
                 
-                <div style="background-color: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h3 style="color: #000; margin: 0;">📋 Order Management (0 orders)</h3>
-                        <button class="button-secondary" onclick="clearOrders()">Clear All Orders</button>
+                <div class="orders-container">
+                    <div class="orders-header">
+                        <h3 style="color: #000; margin: 0;">📋 Order Management (<span id="orderCount">0</span> orders)</h3>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="button-secondary" onclick="refreshOrders()">Refresh Orders</button>
+                            <button class="button-secondary" onclick="clearAllOrders()">Clear All Orders</button>
+                        </div>
                     </div>
-                    
-                    <div style="text-align: center; padding: 3rem; color: #6b7280;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
-                        <h3>No orders yet</h3>
-                        <p>Orders will appear here once customers place them</p>
+                    <div id="ordersContainer">
+                        <!-- Orders will be loaded here -->
                     </div>
                 </div>
             </div>
@@ -989,11 +1243,32 @@
         let products = [...fallbackProducts];
         let isLoadingProducts = false;
         
-        // Cart and Search State
+        // Cart, Search, and Order State
         let cart = [];
         let filteredProducts = [];
         let currentFilter = 'all';
         let searchQuery = '';
+        let orders = [];
+        let orderCounter = 1000;
+
+        // Mobile Money Payment Details
+        const PAYMENT_INFO = {
+            mtn: {
+                name: "GHHomegoods Store",
+                number: "0244123456",
+                network: "MTN Mobile Money"
+            },
+            vodafone: {
+                name: "GHHomegoods Store", 
+                number: "0208654321",
+                network: "Vodafone Cash"
+            },
+            airteltigo: {
+                name: "GHHomegoods Store",
+                number: "0267789012", 
+                network: "AirtelTigo Money"
+            }
+        };
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1490,9 +1765,10 @@
                 showAdminModal();
             }
             
-            // Close cart with Escape key
+            // Close cart/checkout with Escape key
             if (e.key === 'Escape') {
                 closeCart();
+                closeCheckout();
                 closeAdminModal();
             }
             
@@ -1506,15 +1782,21 @@
             }
         });
 
-        // Close cart when clicking outside
+        // Close cart/checkout when clicking outside
         document.addEventListener('click', function(e) {
             const cartModal = document.getElementById('cartModal');
+            const checkoutModal = document.getElementById('checkoutModal');
             const cartButton = document.querySelector('.cart-button');
             
             if (cartModal.classList.contains('open') && 
                 !cartModal.contains(e.target) && 
                 !cartButton.contains(e.target)) {
                 closeCart();
+            }
+            
+            if (checkoutModal.style.display === 'flex' && 
+                e.target === checkoutModal) {
+                closeCheckout();
             }
         });
 
@@ -1558,6 +1840,9 @@
             document.getElementById('homePage').classList.add('hidden');
             document.getElementById('shopPage').classList.add('hidden');
             document.getElementById('adminPage').classList.remove('hidden');
+            
+            // Update order display when showing admin page
+            updateOrderDisplay();
         }
 
         function setActiveView(view) {
@@ -1616,6 +1901,9 @@
                 logoutBtn.classList.remove('hidden');
                 adminNotice.style.display = 'block';
                 adminAccessBtn.classList.add('hidden');
+                
+                // Initialize order display for admin
+                updateOrderDisplay();
             } else {
                 adminBtn.classList.add('hidden');
                 logoutBtn.classList.add('hidden');
@@ -1776,21 +2064,351 @@
                 return;
             }
             
+            closeCart();
+            showCheckoutModal();
+        }
+
+        function showCheckoutModal() {
+            const checkoutModal = document.getElementById('checkoutModal');
+            const checkoutBody = document.getElementById('checkoutBody');
+            
             const total = getCartTotal();
             const itemCount = getCartItemCount();
             
-            alert(`Checkout Summary:\n\nItems: ${itemCount}\nTotal: GH₵ ${total.toFixed(2)}\n\nThank you for your order!\n\nNote: This is a demo checkout. In a real store, this would integrate with payment processing.`);
+            const orderSummaryHTML = cart.map(item => `
+                <div class="order-item">
+                    <span>${item.name} × ${item.quantity}</span>
+                    <span>GH₵ ${(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+            `).join('');
             
-            // Clear cart after "checkout"
-            cart = [];
-            updateCartUI();
-            closeCart();
-            showNotification('Order placed successfully! (Demo)', 'success');
+            checkoutBody.innerHTML = `
+                <div class="checkout-section">
+                    <h3>📦 Order Summary</h3>
+                    <div class="order-summary">
+                        ${orderSummaryHTML}
+                        <div class="order-item">
+                            <span><strong>Total (${itemCount} items)</strong></span>
+                            <span><strong>GH₵ ${total.toFixed(2)}</strong></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="checkout-section">
+                    <h3>👤 Customer Information</h3>
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input required" id="customerName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" class="form-input required" id="customerPhone" placeholder="0XX XXX XXXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email (Optional)</label>
+                        <input type="email" class="form-input" id="customerEmail" placeholder="your.email@example.com">
+                    </div>
+                </div>
+                
+                <div class="checkout-section">
+                    <h3>📍 Delivery Information</h3>
+                    <div class="form-group">
+                        <label class="form-label">Delivery Address *</label>
+                        <input type="text" class="form-input required" id="deliveryAddress" placeholder="House number, street, area" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">City/Town *</label>
+                        <input type="text" class="form-input required" id="deliveryCity" placeholder="e.g., Accra" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Delivery Notes (Optional)</label>
+                        <input type="text" class="form-input" id="deliveryNotes" placeholder="Landmark, special instructions, etc.">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button class="button-secondary" onclick="closeCheckout()" style="flex: 1;">
+                        ← Back to Cart
+                    </button>
+                    <button class="button" onclick="placeOrder()" style="flex: 2;">
+                        Place Order → 
+                    </button>
+                </div>
+            `;
+            
+            checkoutModal.style.display = 'flex';
         }
 
-        function clearOrders() {
-            if (confirm('Are you sure you want to clear all orders? This cannot be undone.')) {
-                showNotification('Orders cleared successfully!', 'success');
+        function closeCheckout() {
+            const checkoutModal = document.getElementById('checkoutModal');
+            checkoutModal.style.display = 'none';
+        }
+
+        function placeOrder() {
+            // Validate required fields
+            const customerName = document.getElementById('customerName').value.trim();
+            const customerPhone = document.getElementById('customerPhone').value.trim();
+            const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
+            const deliveryCity = document.getElementById('deliveryCity').value.trim();
+            
+            if (!customerName || !customerPhone || !deliveryAddress || !deliveryCity) {
+                showNotification('Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            // Validate phone number format
+            const phoneRegex = /^0\d{9}$/;
+            if (!phoneRegex.test(customerPhone.replace(/\s+/g, ''))) {
+                showNotification('Please enter a valid Ghana phone number (0XXXXXXXXX)', 'warning');
+                return;
+            }
+            
+            // Create order
+            const orderId = `GH${orderCounter++}`;
+            const order = {
+                id: orderId,
+                date: new Date().toISOString(),
+                status: 'pending',
+                customer: {
+                    name: customerName,
+                    phone: customerPhone,
+                    email: document.getElementById('customerEmail').value.trim() || 'Not provided'
+                },
+                delivery: {
+                    address: deliveryAddress,
+                    city: deliveryCity,
+                    notes: document.getElementById('deliveryNotes').value.trim() || 'None'
+                },
+                items: [...cart],
+                total: getCartTotal(),
+                itemCount: getCartItemCount()
+            };
+            
+            orders.unshift(order); // Add to beginning of array
+            
+            // Update admin order display
+            updateOrderDisplay();
+            
+            // Show payment instructions
+            showPaymentInstructions(order);
+            
+            // Clear cart
+            cart = [];
+            updateCartUI();
+        }
+
+        function showPaymentInstructions(order) {
+            const checkoutBody = document.getElementById('checkoutBody');
+            
+            checkoutBody.innerHTML = `
+                <div class="order-confirmation">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                    <h3>Order Placed Successfully!</h3>
+                    <div class="order-number">Order #${order.id}</div>
+                    <div class="order-status">⏳ Pending Payment</div>
+                </div>
+                
+                <div class="payment-instructions">
+                    <h4>💰 Payment Instructions</h4>
+                    <p><strong>Total Amount: GH₵ ${order.total.toFixed(2)}</strong></p>
+                    
+                    <div class="payment-detail">
+                        <strong>MTN Mobile Money:</strong><br>
+                        Send to: ${PAYMENT_INFO.mtn.number}<br>
+                        Name: ${PAYMENT_INFO.mtn.name}
+                    </div>
+                    
+                    <div class="payment-detail">
+                        <strong>Vodafone Cash:</strong><br>
+                        Send to: ${PAYMENT_INFO.vodafone.number}<br>
+                        Name: ${PAYMENT_INFO.vodafone.name}
+                    </div>
+                    
+                    <div class="payment-detail">
+                        <strong>AirtelTigo Money:</strong><br>
+                        Send to: ${PAYMENT_INFO.airteltigo.number}<br>
+                        Name: ${PAYMENT_INFO.airteltigo.name}
+                    </div>
+                    
+                    <p style="margin-top: 1rem;"><strong>Important:</strong></p>
+                    <ul style="text-align: left; margin: 0.5rem 0;">
+                        <li>Send exactly <strong>GH₵ ${order.total.toFixed(2)}</strong></li>
+                        <li>Include your order number <strong>${order.id}</strong> in the reference/note</li>
+                        <li>We will confirm your order after payment verification</li>
+                        <li>Delivery within 24-48 hours after confirmation</li>
+                    </ul>
+                </div>
+                
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="button" onclick="closeCheckout(); showNotification('Thank you! We will contact you after payment verification.', 'success');">
+                        I Understand - Close
+                    </button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 1rem; font-size: 0.875rem; color: #6b7280;">
+                    <p>Questions? Call/WhatsApp: <strong>+233 20 123 4567</strong></p>
+                </div>
+            `;
+        }
+
+        // Order Management Functions
+        function updateOrderDisplay() {
+            const ordersContainer = document.getElementById('ordersContainer');
+            const orderCount = document.getElementById('orderCount');
+            const adminOrderCount = document.getElementById('adminOrderCount');
+            
+            if (!ordersContainer) return;
+            
+            // Update order counts in UI
+            if (orderCount) {
+                orderCount.textContent = orders.length;
+            }
+            if (adminOrderCount) {
+                adminOrderCount.textContent = orders.filter(o => o.status === 'pending').length;
+            }
+            
+            if (orders.length === 0) {
+                ordersContainer.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #6b7280;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                        <h3>No orders yet</h3>
+                        <p>Orders will appear here once customers place them</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const ordersHTML = orders.map(order => {
+                const orderDate = new Date(order.date).toLocaleString();
+                const statusClass = `status-${order.status}`;
+                const statusIcon = order.status === 'pending' ? '⏳' : 
+                                 order.status === 'confirmed' ? '✅' : '📦';
+                
+                const itemsList = order.items.map(item => 
+                    `${item.name} × ${item.quantity}`
+                ).join(', ');
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-id">Order #${order.id}</span>
+                            <span class="order-status-badge ${statusClass}">
+                                ${statusIcon} ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </span>
+                        </div>
+                        
+                        <div class="order-details">
+                            <div class="order-info">
+                                <strong>Customer:</strong><br>
+                                ${order.customer.name}<br>
+                                📞 ${order.customer.phone}<br>
+                                ✉️ ${order.customer.email}
+                            </div>
+                            <div class="order-info">
+                                <strong>Delivery:</strong><br>
+                                ${order.delivery.address}<br>
+                                ${order.delivery.city}<br>
+                                ${order.delivery.notes ? `Note: ${order.delivery.notes}` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="order-info" style="margin: 1rem 0;">
+                            <strong>Items:</strong> ${itemsList}<br>
+                            <strong>Total:</strong> GH₵ ${order.total.toFixed(2)} (${order.itemCount} items)<br>
+                            <strong>Date:</strong> ${orderDate}
+                        </div>
+                        
+                        <div class="order-actions">
+                            ${order.status === 'pending' ? `
+                                <button class="action-btn btn-confirm" onclick="updateOrderStatus('${order.id}', 'confirmed')">
+                                    ✅ Confirm Payment
+                                </button>
+                                <button class="action-btn btn-cancel" onclick="cancelOrder('${order.id}')">
+                                    ❌ Cancel Order
+                                </button>
+                            ` : ''}
+                            ${order.status === 'confirmed' ? `
+                                <button class="action-btn btn-complete" onclick="updateOrderStatus('${order.id}', 'completed')">
+                                    📦 Mark as Delivered
+                                </button>
+                            ` : ''}
+                            <button class="action-btn" style="background: #6b7280; color: white;" onclick="viewOrderDetails('${order.id}')">
+                                👁️ View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            ordersContainer.innerHTML = ordersHTML;
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            const confirmMessages = {
+                'confirmed': 'Confirm that payment has been received for this order?',
+                'completed': 'Mark this order as delivered/completed?'
+            };
+            
+            if (confirm(confirmMessages[newStatus])) {
+                order.status = newStatus;
+                updateOrderDisplay();
+                
+                const statusMessages = {
+                    'confirmed': 'Payment confirmed! Order is ready for delivery.',
+                    'completed': 'Order marked as delivered.'
+                };
+                
+                showNotification(statusMessages[newStatus], 'success');
+            }
+        }
+
+        function cancelOrder(orderId) {
+            if (confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+                orders = orders.filter(o => o.id !== orderId);
+                updateOrderDisplay();
+                showNotification('Order cancelled successfully', 'info');
+            }
+        }
+
+        function viewOrderDetails(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            const orderDate = new Date(order.date).toLocaleString();
+            const itemsList = order.items.map(item => 
+                `${item.name} × ${item.quantity} = GH₵ ${(item.price * item.quantity).toFixed(2)}`
+            ).join('\n');
+            
+            alert(`Order Details - #${order.id}\n\n` +
+                  `Customer: ${order.customer.name}\n` +
+                  `Phone: ${order.customer.phone}\n` +
+                  `Email: ${order.customer.email}\n\n` +
+                  `Delivery Address:\n${order.delivery.address}, ${order.delivery.city}\n` +
+                  `${order.delivery.notes ? `Notes: ${order.delivery.notes}\n` : ''}\n` +
+                  `Items:\n${itemsList}\n\n` +
+                  `Total: GH₵ ${order.total.toFixed(2)}\n` +
+                  `Status: ${order.status.toUpperCase()}\n` +
+                  `Date: ${orderDate}`);
+        }
+
+        function refreshOrders() {
+            updateOrderDisplay();
+            showNotification('Orders refreshed', 'info');
+        }
+
+        function clearAllOrders() {
+            if (orders.length === 0) {
+                showNotification('No orders to clear', 'info');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to delete ALL orders? This action cannot be undone.')) {
+                orders = [];
+                updateOrderDisplay();
+                showNotification('All orders cleared', 'info');
             }
         }
 
