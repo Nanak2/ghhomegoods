@@ -330,8 +330,238 @@
             text-decoration: line-through;
         }
         
-        /* Footer */
-        .footer {
+        /* Search Bar Styles */
+        .search-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            border-color: #ea580c;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+        }
+        
+        .search-filters {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #ea580c;
+            color: white;
+        }
+        
+        .search-results {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* Cart Modal Styles */
+        .cart-modal {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            z-index: 1003;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .cart-modal.open {
+            right: 0;
+        }
+        
+        .cart-header {
+            padding: 2rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .cart-header h2 {
+            color: #000;
+            margin: 0;
+        }
+        
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .cart-content {
+            padding: 1rem 2rem;
+        }
+        
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .cart-item-image {
+            width: 60px;
+            height: 60px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        
+        .cart-item-details {
+            flex: 1;
+        }
+        
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .cart-item-price {
+            color: #ea580c;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .qty-btn {
+            background: #f3f4f6;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .qty-btn:hover {
+            background: #ea580c;
+            color: white;
+        }
+        
+        .qty-display {
+            padding: 0.25rem 0.75rem;
+            background: #f9fafb;
+            border-radius: 4px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .remove-item {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        
+        .cart-summary {
+            border-top: 2px solid #e5e7eb;
+            padding: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
+        
+        .clear-cart-btn {
+            width: 100%;
+            background: none;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6b7280;
+        }
+        
+        .empty-cart-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
             background: linear-gradient(135deg, #000000 0%, #1f2937 100%);
             color: white;
             padding: 3rem 1rem;
@@ -506,6 +736,17 @@
             </p>
         </div>
 
+        <!-- Cart Modal -->
+        <div id="cartModal" class="cart-modal">
+            <div class="cart-header">
+                <h2>🛒 Shopping Cart</h2>
+                <button class="close-cart" onclick="closeCart()">&times;</button>
+            </div>
+            <div class="cart-content" id="cartContent">
+                <!-- Cart items will be loaded here -->
+            </div>
+        </div>
+
         <!-- Header -->
         <header class="header">
             <div class="header-content">
@@ -578,6 +819,22 @@
             <!-- Shop Page -->
             <div id="shopPage" class="hidden">
                 <h2 class="section-title">All Products</h2>
+                
+                <!-- Search Section -->
+                <div class="search-section">
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search products by name, description, or category...">
+                        <div class="search-filters">
+                            <button class="filter-btn active" onclick="filterByCategory('all')">All</button>
+                            <button class="filter-btn" onclick="filterByCategory('baby-care')">Baby Care</button>
+                            <button class="filter-btn" onclick="filterByCategory('food-beverages')">Food & Beverages</button>
+                            <button class="filter-btn" onclick="filterByCategory('cleaning')">Cleaning</button>
+                            <button class="filter-btn" onclick="filterByCategory('personal-care')">Personal Care</button>
+                        </div>
+                    </div>
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+                
                 <div class="product-grid" id="allProducts">
                     <!-- All products will be loaded here -->
                 </div>
@@ -730,6 +987,12 @@
         let currentView = 'home';
         let products = [...fallbackProducts];
         let isLoadingProducts = false;
+        
+        // Cart and Search State
+        let cart = [];
+        let filteredProducts = [];
+        let currentFilter = 'all';
+        let searchQuery = '';
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
@@ -740,42 +1003,85 @@
             if (sessionStorage.getItem('gh_admin_session') === 'authenticated') {
                 setAdminMode(true);
             }
+            
+            // Initialize search functionality
+            initializeSearch();
         });
 
-        // DEBUG HELPER: Understand CSV structure
-        function debugCSVStructure(csvText) {
-            console.log("=== CSV DEBUG INFORMATION ===");
-            
-            const lines = csvText.split('\n').filter(line => line.trim());
-            console.log(`Total lines: ${lines.length}`);
-            
-            if (lines.length > 0) {
-                const headers = lines[0].split(',').map((h, index) => {
-                    const clean = h.trim().replace(/"/g, '');
-                    return `Column ${String.fromCharCode(65 + index)} (${index}): "${clean}"`;
-                });
-                
-                console.log("Headers found:");
-                headers.forEach(header => console.log("  " + header));
-                
-                if (lines.length > 1) {
-                    console.log("\nFirst data row:");
-                    const firstRow = parseCSVLine(lines[1]).map((val, index) => {
-                        return `Column ${String.fromCharCode(65 + index)} (${index}): "${val}"`;
-                    });
-                    firstRow.forEach(val => console.log("  " + val));
-                    
-                    if (lines.length > 2) {
-                        console.log("\nSecond data row:");
-                        const secondRow = parseCSVLine(lines[2]).map((val, index) => {
-                            return `Column ${String.fromCharCode(65 + index)} (${index}): "${val}"`;
-                        });
-                        secondRow.forEach(val => console.log("  " + val));
+        // Initialize search functionality
+        function initializeSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', handleSearch);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleSearch();
                     }
+                });
+            }
+        }
+
+        // ENHANCED: Better Google Drive URL conversion
+        function fixGoogleDriveUrl(url) {
+            if (!url || !url.includes('drive.google.com')) {
+                return url;
+            }
+            
+            console.log('Original URL:', url);
+            
+            // Extract file ID from various Google Drive URL formats
+            let fileId = null;
+            
+            // Format 1: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+            let match = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+            if (match) {
+                fileId = match[1];
+            }
+            
+            // Format 2: https://drive.google.com/open?id=FILE_ID
+            if (!fileId) {
+                match = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+                if (match) {
+                    fileId = match[1];
                 }
             }
             
-            console.log("=== END CSV DEBUG ===");
+            // Format 3: https://drive.google.com/uc?id=FILE_ID (already correct)
+            if (!fileId) {
+                match = url.match(/uc\?id=([a-zA-Z0-9-_]+)/);
+                if (match) {
+                    return url; // Already in correct format
+                }
+            }
+            
+            if (fileId) {
+                const fixedUrl = `https://drive.google.com/uc?id=${fileId}`;
+                console.log('Fixed URL:', fixedUrl);
+                return fixedUrl;
+            }
+            
+            console.log('Could not extract file ID from:', url);
+            return url;
+        }
+
+        // DEBUG: Test if image URLs are working
+        function debugImageUrls() {
+            console.log('=== IMAGE URL DEBUGGING ===');
+            
+            products.slice(0, 5).forEach((product, index) => {
+                console.log(`Product ${index + 1}: ${product.name}`);
+                console.log(`  URL: ${product.imageUrl}`);
+                
+                if (product.imageUrl) {
+                    const img = new Image();
+                    img.onload = () => console.log(`  ✅ Image loads successfully`);
+                    img.onerror = () => console.log(`  ❌ Image failed to load - check permissions`);
+                    img.src = product.imageUrl;
+                } else {
+                    console.log(`  ⚠️ No image URL provided`);
+                }
+                console.log('---');
+            });
         }
 
         // IMPROVED: Better CSV line parsing to handle quoted values with commas
@@ -869,6 +1175,13 @@
                         setLoadingState(false);
                         loadProducts();
                         updateProductCount();
+                        
+                        // Debug image URLs after loading
+                        setTimeout(() => {
+                            console.log('🖼️ Testing image URLs...');
+                            debugImageUrls();
+                        }, 1000);
+                        
                         return; // Success, exit function
                     } else {
                         throw new Error('No valid products found in CSV data');
@@ -901,12 +1214,13 @@
             updateProductCount();
         }
 
-        // IMPROVED: Parse CSV data with correct column mapping
+        // CORRECTED: Parse CSV data with exact column mapping for your sheet
         function parseCSVProducts(csvText) {
             const lines = csvText.split('\n').filter(line => line.trim());
             if (lines.length < 2) return [];
             
             console.log('CSV Headers found:', lines[0]);
+            console.log('Expected columns: ID, Name, Price, Category, [Number], Description, Image_URL');
             const products = [];
             
             for (let i = 1; i < lines.length; i++) {
@@ -914,7 +1228,7 @@
                 if (!line) continue;
                 
                 const values = parseCSVLine(line);
-                console.log(`Row ${i} parsed values (${values.length} columns):`, values);
+                console.log(`Row ${i} parsed (${values.length} columns):`, values.map((v, idx) => `${idx}: "${v}"`));
                 
                 if (values.length < 6) {
                     console.log(`Row ${i} skipped - insufficient columns (${values.length})`);
@@ -924,42 +1238,34 @@
                 const product = {};
                 
                 try {
-                    // Based on your CSV structure: ID,Name,Price,Category,,Description,Image_URL
-                    product.id = parseInt(values[0]) || i;
-                    product.name = values[1]?.trim() || `Product ${i}`;
-                    product.price = parseFloat(values[2]) || 0;
-                    product.category = values[3]?.trim().toLowerCase() || 'general';
-                    // Skip column 4 (empty)
-                    product.description = values[5]?.trim() || product.name;
-                    product.imageUrl = values[6]?.trim() || '';
+                    // Based on your exact sheet structure:
+                    // A=ID, B=Name, C=Price, D=Category, E=Number, F=Description, G=Image_URL
+                    product.id = parseInt(values[0]) || i;                    // Column A: ID
+                    product.name = values[1]?.trim() || `Product ${i}`;       // Column B: Name
+                    product.price = parseFloat(values[2]) || 0;              // Column C: Price
+                    product.category = values[3]?.trim().toLowerCase() || 'general'; // Column D: Category
+                    // values[4] = Extra number (skip)                       // Column E: Skip
+                    product.description = values[5]?.trim() || product.name; // Column F: Description
+                    product.imageUrl = values[6]?.trim() || '';              // Column G: Image_URL
                     
-                    // Fix Google Drive URLs
-                    if (product.imageUrl && product.imageUrl.includes('drive.google.com')) {
-                        // Convert Google Drive sharing URLs to direct image URLs
-                        if (product.imageUrl.includes('/file/d/')) {
-                            const fileIdMatch = product.imageUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
-                            if (fileIdMatch) {
-                                product.imageUrl = `https://drive.google.com/uc?id=${fileIdMatch[1]}`;
-                            }
-                        } else {
-                            // Handle other Google Drive URL formats
-                            const fileIdMatch = product.imageUrl.match(/id=([a-zA-Z0-9-_]+)/);
-                            if (fileIdMatch) {
-                                product.imageUrl = `https://drive.google.com/uc?id=${fileIdMatch[1]}`;
-                            }
-                        }
+                    // Clean up category (remove extra spaces/tabs)
+                    product.category = product.category.replace(/\s+/g, '-');
+                    
+                    // Fix Google Drive URLs to direct image links
+                    if (product.imageUrl) {
+                        product.imageUrl = fixGoogleDriveUrl(product.imageUrl);
                     }
                     
                     // Set defaults
                     product.inStock = true;
-                    product.featured = i <= 8;
+                    product.featured = i <= 8; // First 8 products featured
                     
                     // Validate product data
                     if (product.name && product.name.length > 1 && product.price > 0) {
-                        console.log(`✅ Valid product: "${product.name}" - "${product.description}" - GH₵${product.price} - Image: ${product.imageUrl ? 'Yes' : 'No'}`);
+                        console.log(`✅ Product ${i}: "${product.name}" | "${product.description}" | GH₵${product.price} | Category: ${product.category}`);
                         products.push(product);
                     } else {
-                        console.log(`❌ Invalid product data in row ${i}:`, {
+                        console.log(`❌ Invalid product in row ${i}:`, {
                             name: product.name,
                             price: product.price,
                             description: product.description
@@ -967,11 +1273,12 @@
                     }
                     
                 } catch (error) {
-                    console.log(`❌ Error parsing row ${i}:`, error, values);
+                    console.log(`❌ Error parsing row ${i}:`, error);
+                    console.log('Raw values:', values);
                 }
             }
             
-            console.log(`Successfully parsed ${products.length} valid products`);
+            console.log(`✅ Successfully parsed ${products.length} products from Google Sheets`);
             return products;
         }
 
@@ -982,17 +1289,100 @@
             
             if (!featuredContainer || !allContainer) return;
             
+            // Load featured products (always show all featured)
             featuredContainer.innerHTML = '';
-            allContainer.innerHTML = '';
-            
-            products.forEach(product => {
-                const productHTML = createProductHTML(product);
-                
-                if (product.featured) {
-                    featuredContainer.innerHTML += productHTML;
-                }
-                allContainer.innerHTML += productHTML;
+            products.filter(p => p.featured).forEach(product => {
+                featuredContainer.innerHTML += createProductHTML(product);
             });
+            
+            // Load all products (with current filter/search applied)
+            updateProductDisplay();
+        }
+
+        // Update product display based on current filters
+        function updateProductDisplay() {
+            const allContainer = document.getElementById('allProducts');
+            if (!allContainer) return;
+            
+            // Apply current filters and search
+            let displayProducts = [...products];
+            
+            // Apply category filter
+            if (currentFilter !== 'all') {
+                displayProducts = displayProducts.filter(product => 
+                    product.category.includes(currentFilter) || 
+                    product.category.includes(currentFilter.replace('-', ''))
+                );
+            }
+            
+            // Apply search filter
+            if (searchQuery.trim()) {
+                const query = searchQuery.toLowerCase().trim();
+                displayProducts = displayProducts.filter(product =>
+                    product.name.toLowerCase().includes(query) ||
+                    product.description.toLowerCase().includes(query) ||
+                    product.category.toLowerCase().includes(query)
+                );
+            }
+            
+            // Update display
+            allContainer.innerHTML = '';
+            if (displayProducts.length === 0) {
+                allContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #6b7280;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+                        <h3>No products found</h3>
+                        <p>Try adjusting your search terms or filters</p>
+                    </div>
+                `;
+            } else {
+                displayProducts.forEach(product => {
+                    allContainer.innerHTML += createProductHTML(product);
+                });
+            }
+            
+            // Update search results text
+            updateSearchResults(displayProducts.length);
+        }
+
+        // Handle search input
+        function handleSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchQuery = searchInput.value;
+                updateProductDisplay();
+            }
+        }
+
+        // Filter by category
+        function filterByCategory(category) {
+            currentFilter = category;
+            
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateProductDisplay();
+        }
+
+        // Update search results display
+        function updateSearchResults(count) {
+            const searchResults = document.getElementById('searchResults');
+            if (!searchResults) return;
+            
+            let message = '';
+            if (searchQuery.trim() || currentFilter !== 'all') {
+                message = `Showing ${count} product${count !== 1 ? 's' : ''}`;
+                if (searchQuery.trim()) {
+                    message += ` for "${searchQuery}"`;
+                }
+                if (currentFilter !== 'all') {
+                    message += ` in ${currentFilter.replace('-', ' ')}`;
+                }
+            }
+            searchResults.textContent = message;
         }
 
         // FIXED: Create product HTML with proper string escaping
@@ -1092,11 +1482,38 @@
             }, 4000);
         }
 
-        // Admin keyboard shortcut (Ctrl+Shift+A)
+        // Admin keyboard shortcut (Ctrl+Shift+A) and other shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.shiftKey && e.key === 'A') {
                 e.preventDefault();
                 showAdminModal();
+            }
+            
+            // Close cart with Escape key
+            if (e.key === 'Escape') {
+                closeCart();
+                closeAdminModal();
+            }
+            
+            // Search shortcut (Ctrl+K or Cmd+K)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput && !document.getElementById('shopPage').classList.contains('hidden')) {
+                    searchInput.focus();
+                }
+            }
+        });
+
+        // Close cart when clicking outside
+        document.addEventListener('click', function(e) {
+            const cartModal = document.getElementById('cartModal');
+            const cartButton = document.querySelector('.cart-button');
+            
+            if (cartModal.classList.contains('open') && 
+                !cartModal.contains(e.target) && 
+                !cartButton.contains(e.target)) {
+                closeCart();
             }
         });
 
@@ -1113,6 +1530,22 @@
             document.getElementById('homePage').classList.add('hidden');
             document.getElementById('shopPage').classList.remove('hidden');
             document.getElementById('adminPage').classList.add('hidden');
+            
+            // Initialize search if not already done
+            initializeSearch();
+            
+            // Apply category filter if specified
+            if (category) {
+                currentFilter = category;
+                // Update filter buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase().includes(category.replace('-', ' '))) {
+                        btn.classList.add('active');
+                    }
+                });
+                updateProductDisplay();
+            }
         }
 
         function showAdmin() {
@@ -1190,17 +1623,168 @@
             }
         }
 
-        // Cart functions (simplified for demo)
+        // Cart functions
         function addToCart(productId) {
             const product = products.find(p => p.id === productId);
-            if (product) {
-                console.log('Added to cart:', product.name);
-                showNotification(`Added ${product.name} to cart!`, 'success');
+            if (!product) return;
+            
+            // Check if item already in cart
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    imageUrl: product.imageUrl,
+                    quantity: 1
+                });
+            }
+            
+            updateCartUI();
+            showNotification(`Added ${product.name} to cart!`, 'success');
+            console.log('Added to cart:', product.name);
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCartUI();
+            showNotification('Item removed from cart', 'info');
+        }
+
+        function updateQuantity(productId, change) {
+            const item = cart.find(item => item.id === productId);
+            if (!item) return;
+            
+            item.quantity += change;
+            
+            if (item.quantity <= 0) {
+                removeFromCart(productId);
+            } else {
+                updateCartUI();
             }
         }
 
+        function clearCart() {
+            if (cart.length === 0) return;
+            
+            if (confirm('Are you sure you want to clear your cart?')) {
+                cart = [];
+                updateCartUI();
+                showNotification('Cart cleared', 'info');
+            }
+        }
+
+        function getCartTotal() {
+            return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        }
+
+        function getCartItemCount() {
+            return cart.reduce((total, item) => total + item.quantity, 0);
+        }
+
+        function updateCartUI() {
+            updateCartBadge();
+            updateCartContent();
+        }
+
+        function updateCartBadge() {
+            const cartBadge = document.getElementById('cartBadge');
+            const itemCount = getCartItemCount();
+            
+            if (itemCount > 0) {
+                cartBadge.textContent = itemCount;
+                cartBadge.classList.remove('hidden');
+            } else {
+                cartBadge.classList.add('hidden');
+            }
+        }
+
+        function updateCartContent() {
+            const cartContent = document.getElementById('cartContent');
+            if (!cartContent) return;
+            
+            if (cart.length === 0) {
+                cartContent.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <h3>Your cart is empty</h3>
+                        <p>Add some products to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const cartItemsHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-image">
+                        ${item.imageUrl ? 
+                            `<img src="${item.imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">` :
+                            '📦'
+                        }
+                    </div>
+                    <div class="cart-item-details">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">GH₵ ${item.price.toFixed(2)}</div>
+                        <div class="cart-item-controls">
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">−</button>
+                            <span class="qty-display">${item.quantity}</span>
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                            <button class="remove-item" onclick="removeFromCart(${item.id})">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            const total = getCartTotal();
+            const itemCount = getCartItemCount();
+            
+            cartContent.innerHTML = `
+                ${cartItemsHTML}
+                <div class="cart-summary">
+                    <div class="cart-total">
+                        <span>Total (${itemCount} items):</span>
+                        <span>GH₵ ${total.toFixed(2)}</span>
+                    </div>
+                    <button class="checkout-btn" onclick="proceedToCheckout()">
+                        Proceed to Checkout
+                    </button>
+                    <button class="clear-cart-btn" onclick="clearCart()">
+                        Clear Cart
+                    </button>
+                </div>
+            `;
+        }
+
         function showCart() {
-            showNotification('Cart functionality - Coming soon!', 'info');
+            const cartModal = document.getElementById('cartModal');
+            cartModal.classList.add('open');
+            updateCartContent();
+        }
+
+        function closeCart() {
+            const cartModal = document.getElementById('cartModal');
+            cartModal.classList.remove('open');
+        }
+
+        function proceedToCheckout() {
+            if (cart.length === 0) {
+                showNotification('Your cart is empty!', 'warning');
+                return;
+            }
+            
+            const total = getCartTotal();
+            const itemCount = getCartItemCount();
+            
+            alert(`Checkout Summary:\n\nItems: ${itemCount}\nTotal: GH₵ ${total.toFixed(2)}\n\nThank you for your order!\n\nNote: This is a demo checkout. In a real store, this would integrate with payment processing.`);
+            
+            // Clear cart after "checkout"
+            cart = [];
+            updateCartUI();
+            closeCart();
+            showNotification('Order placed successfully! (Demo)', 'success');
         }
 
         function clearOrders() {
