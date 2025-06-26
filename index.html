@@ -995,12 +995,16 @@
             });
         }
 
-        // IMPROVED: Create product HTML with better image error handling
+        // FIXED: Create product HTML with proper string escaping
         function createProductHTML(product) {
+            // Escape product name and description for safe HTML insertion
+            const safeName = product.name.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+            const safeDescription = (product.description || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+            
             const imageHTML = product.imageUrl ? 
-                `<img src="${product.imageUrl}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; console.log('Image failed to load for: ${product.name}');">
-                 <span style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; color: #9ca3af;">📷 Image Loading...</span>` :
+                `<img src="${product.imageUrl}" alt="${safeName}" style="width: 100%; height: 100%; object-fit: cover;" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <span style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; color: #9ca3af;">📷 Image Not Available</span>` :
                 `<span style="color: #9ca3af;">📷 No Image</span>`;
 
             // Use full description from Google Sheets
@@ -1016,7 +1020,7 @@
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">${product.name}</h3>
-                        <p class="product-description" title="${displayDescription}">${displayDescription}</p>
+                        <p class="product-description" title="${safeDescription}">${displayDescription}</p>
                         <div class="price-container">
                             <span class="current-price">GH₵ ${product.price.toFixed(2)}</span>
                             ${product.originalPrice ? `<span class="original-price">GH₵ ${product.originalPrice.toFixed(2)}</span>` : ''}
