@@ -742,40 +742,67 @@
             }
         });
 
-        // DEBUG HELPER: Understand CSV structure
-        function debugCSVStructure(csvText) {
-            console.log("=== CSV DEBUG INFORMATION ===");
+        // ENHANCED: Better Google Drive URL conversion
+        function fixGoogleDriveUrl(url) {
+            if (!url || !url.includes('drive.google.com')) {
+                return url;
+            }
             
-            const lines = csvText.split('\n').filter(line => line.trim());
-            console.log(`Total lines: ${lines.length}`);
+            console.log('Original URL:', url);
             
-            if (lines.length > 0) {
-                const headers = lines[0].split(',').map((h, index) => {
-                    const clean = h.trim().replace(/"/g, '');
-                    return `Column ${String.fromCharCode(65 + index)} (${index}): "${clean}"`;
-                });
-                
-                console.log("Headers found:");
-                headers.forEach(header => console.log("  " + header));
-                
-                if (lines.length > 1) {
-                    console.log("\nFirst data row:");
-                    const firstRow = parseCSVLine(lines[1]).map((val, index) => {
-                        return `Column ${String.fromCharCode(65 + index)} (${index}): "${val}"`;
-                    });
-                    firstRow.forEach(val => console.log("  " + val));
-                    
-                    if (lines.length > 2) {
-                        console.log("\nSecond data row:");
-                        const secondRow = parseCSVLine(lines[2]).map((val, index) => {
-                            return `Column ${String.fromCharCode(65 + index)} (${index}): "${val}"`;
-                        });
-                        secondRow.forEach(val => console.log("  " + val));
-                    }
+            // Extract file ID from various Google Drive URL formats
+            let fileId = null;
+            
+            // Format 1: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+            let match = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+            if (match) {
+                fileId = match[1];
+            }
+            
+            // Format 2: https://drive.google.com/open?id=FILE_ID
+            if (!fileId) {
+                match = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+                if (match) {
+                    fileId = match[1];
                 }
             }
             
-            console.log("=== END CSV DEBUG ===");
+            // Format 3: https://drive.google.com/uc?id=FILE_ID (already correct)
+            if (!fileId) {
+                match = url.match(/uc\?id=([a-zA-Z0-9-_]+)/);
+                if (match) {
+                    return url; // Already in correct format
+                }
+            }
+            
+            if (fileId) {
+                const fixedUrl = `https://drive.google.com/uc?id=${fileId}`;
+                console.log('Fixed URL:', fixedUrl);
+                return fixedUrl;
+            }
+            
+            console.log('Could not extract file ID from:', url);
+            return url;
+        }
+
+        // DEBUG: Test if image URLs are working
+        function debugImageUrls() {
+            console.log('=== IMAGE URL DEBUGGING ===');
+            
+            products.slice(0, 5).forEach((product, index) => {
+                console.log(`Product ${index + 1}: ${product.name}`);
+                console.log(`  URL: ${product.imageUrl}`);
+                
+                if (product.imageUrl) {
+                    const img = new Image();
+                    img.onload = () => console.log(`  ✅ Image loads successfully`);
+                    img.onerror = () => console.log(`  ❌ Image failed to load - check permissions`);
+                    img.src = product.imageUrl;
+                } else {
+                    console.log(`  ⚠️ No image URL provided`);
+                }
+                console.log('---');
+            });
         }
 
         // IMPROVED: Better CSV line parsing to handle quoted values with commas
@@ -869,6 +896,13 @@
                         setLoadingState(false);
                         loadProducts();
                         updateProductCount();
+                        
+                        // Debug image URLs after loading
+                        setTimeout(() => {
+                            console.log('🖼️ Testing image URLs...');
+                            debugImageUrls();
+                        }, 1000);
+                        
                         return; // Success, exit function
                     } else {
                         throw new Error('No valid products found in CSV data');
@@ -939,14 +973,8 @@
                     product.category = product.category.replace(/\s+/g, '-');
                     
                     // Fix Google Drive URLs to direct image links
-                    if (product.imageUrl && product.imageUrl.includes('drive.google.com')) {
-                        if (product.imageUrl.includes('/file/d/')) {
-                            const fileIdMatch = product.imageUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
-                            if (fileIdMatch) {
-                                product.imageUrl = `https://drive.google.com/uc?id=${fileIdMatch[1]}`;
-                                console.log(`✅ Fixed Google Drive URL for ${product.name}: ${product.imageUrl}`);
-                            }
-                        }
+                    if (product.imageUrl) {
+                        product.imageUrl = fixGoogleDriveUrl(product.imageUrl);
                     }
                     
                     // Set defaults
