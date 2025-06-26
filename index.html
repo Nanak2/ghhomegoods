@@ -901,12 +901,13 @@
             updateProductCount();
         }
 
-        // IMPROVED: Parse CSV data with correct column mapping
+        // CORRECTED: Parse CSV data with exact column mapping for your sheet
         function parseCSVProducts(csvText) {
             const lines = csvText.split('\n').filter(line => line.trim());
             if (lines.length < 2) return [];
             
             console.log('CSV Headers found:', lines[0]);
+            console.log('Expected columns: ID, Name, Price, Category, [Number], Description, Image_URL');
             const products = [];
             
             for (let i = 1; i < lines.length; i++) {
@@ -914,7 +915,7 @@
                 if (!line) continue;
                 
                 const values = parseCSVLine(line);
-                console.log(`Row ${i} parsed values (${values.length} columns):`, values);
+                console.log(`Row ${i} parsed (${values.length} columns):`, values.map((v, idx) => `${idx}: "${v}"`));
                 
                 if (values.length < 6) {
                     console.log(`Row ${i} skipped - insufficient columns (${values.length})`);
@@ -924,42 +925,40 @@
                 const product = {};
                 
                 try {
-                    // Based on your CSV structure: ID,Name,Price,Category,,Description,Image_URL
-                    product.id = parseInt(values[0]) || i;
-                    product.name = values[1]?.trim() || `Product ${i}`;
-                    product.price = parseFloat(values[2]) || 0;
-                    product.category = values[3]?.trim().toLowerCase() || 'general';
-                    // Skip column 4 (empty)
-                    product.description = values[5]?.trim() || product.name;
-                    product.imageUrl = values[6]?.trim() || '';
+                    // Based on your exact sheet structure:
+                    // A=ID, B=Name, C=Price, D=Category, E=Number, F=Description, G=Image_URL
+                    product.id = parseInt(values[0]) || i;                    // Column A: ID
+                    product.name = values[1]?.trim() || `Product ${i}`;       // Column B: Name
+                    product.price = parseFloat(values[2]) || 0;              // Column C: Price
+                    product.category = values[3]?.trim().toLowerCase() || 'general'; // Column D: Category
+                    // values[4] = Extra number (skip)                       // Column E: Skip
+                    product.description = values[5]?.trim() || product.name; // Column F: Description
+                    product.imageUrl = values[6]?.trim() || '';              // Column G: Image_URL
                     
-                    // Fix Google Drive URLs
+                    // Clean up category (remove extra spaces/tabs)
+                    product.category = product.category.replace(/\s+/g, '-');
+                    
+                    // Fix Google Drive URLs to direct image links
                     if (product.imageUrl && product.imageUrl.includes('drive.google.com')) {
-                        // Convert Google Drive sharing URLs to direct image URLs
                         if (product.imageUrl.includes('/file/d/')) {
                             const fileIdMatch = product.imageUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
                             if (fileIdMatch) {
                                 product.imageUrl = `https://drive.google.com/uc?id=${fileIdMatch[1]}`;
-                            }
-                        } else {
-                            // Handle other Google Drive URL formats
-                            const fileIdMatch = product.imageUrl.match(/id=([a-zA-Z0-9-_]+)/);
-                            if (fileIdMatch) {
-                                product.imageUrl = `https://drive.google.com/uc?id=${fileIdMatch[1]}`;
+                                console.log(`✅ Fixed Google Drive URL for ${product.name}: ${product.imageUrl}`);
                             }
                         }
                     }
                     
                     // Set defaults
                     product.inStock = true;
-                    product.featured = i <= 8;
+                    product.featured = i <= 8; // First 8 products featured
                     
                     // Validate product data
                     if (product.name && product.name.length > 1 && product.price > 0) {
-                        console.log(`✅ Valid product: "${product.name}" - "${product.description}" - GH₵${product.price} - Image: ${product.imageUrl ? 'Yes' : 'No'}`);
+                        console.log(`✅ Product ${i}: "${product.name}" | "${product.description}" | GH₵${product.price} | Category: ${product.category}`);
                         products.push(product);
                     } else {
-                        console.log(`❌ Invalid product data in row ${i}:`, {
+                        console.log(`❌ Invalid product in row ${i}:`, {
                             name: product.name,
                             price: product.price,
                             description: product.description
@@ -967,11 +966,12 @@
                     }
                     
                 } catch (error) {
-                    console.log(`❌ Error parsing row ${i}:`, error, values);
+                    console.log(`❌ Error parsing row ${i}:`, error);
+                    console.log('Raw values:', values);
                 }
             }
             
-            console.log(`Successfully parsed ${products.length} valid products`);
+            console.log(`✅ Successfully parsed ${products.length} products from Google Sheets`);
             return products;
         }
 
