@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHHomegoods - Your Trusted Source for Quality Products</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fafafa;
+            line-height: 1.6;
+        }
+        
+        .container {
+            min-height: 100vh;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+        
+        .logo-custom {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            border: 3px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: bold;
+        }
+        
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .nav-list {
+            display: flex;
+            list-style: none;
+            gap: 1rem;
+        }
+        
+        .nav-button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        
+        .nav-button:hover,
+        .nav-button.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .cart-button {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #dc2626;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid white;
+        }
+        
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #ffffff 0%, #fed7aa 100%);
+            border-radius: 1rem;
+            padding: 4rem 2rem;
+            margin: 2rem 0;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+            color: white;
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(234, 88, 12, 0.3);
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        /* Category Grid */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+        
+        .category-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(234, 88, 12, 0.15);
+            border-color: #ea580c;
+        }
+        
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(234, 88, 12, 0.15);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #fed7aa 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            position: relative;
+        }
+        
+        .sale-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background-color: #dc2626;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        .product-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .price-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .current-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ea580c;
+        }
+        
+        .original-price {
+            font-size: 1rem;
+            color: #6b7280;
+            text-decoration: line-through;
+        }
+        
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #000000 0%, #1f2937 100%);
+            color: white;
+            padding: 3rem 1rem;
+            margin-top: 4rem;
+            text-align: center;
+        }
+        
+        .footer h3 {
+            color: #ea580c;
+            margin-bottom: 1rem;
+        }
+        
+        .payment-info {
+            background-color: rgba(234, 88, 12, 0.1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .payment-info p {
+            color: #ea580c;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+        
+        /* Admin Login Modal */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            z-index: 1002;
+            min-width: 400px;
+            display: none;
+        }
+        
+        .modal h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #000;
+        }
+        
+        .modal input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .button-secondary {
+            background-color: white;
+            color: #ea580c;
+            border: 2px solid #ea580c;
+            padding: 0.875rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .admin-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #16a34a;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .admin-access {
+            background: none;
+            border: none;
+            color: #4b5563;
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+            opacity: 0.5;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .category-grid,
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Admin Status Notice -->
+        <div id="adminNotice" class="admin-notice">
+            ✓ Authenticated as Admin
+        </div>
+
+        <!-- Admin Login Modal -->
+        <div id="modalBackdrop" class="modal-backdrop"></div>
+        <div id="adminModal" class="modal">
+            <h2>🔐 Admin Login</h2>
+            <input type="password" id="adminPassword" placeholder="Enter admin password" autocomplete="current-password">
+            <div class="modal-buttons">
+                <button class="button-secondary" onclick="closeAdminModal()">Cancel</button>
+                <button class="button" onclick="adminLogin()">Login</button>
+            </div>
+            <p style="font-size: 0.8rem; color: #6b7280; text-align: center; margin-top: 1rem; margin-bottom: 0;">
+                Tip: Press Ctrl+Shift+A to open this login
+            </p>
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo" onclick="showHome()">
+                    <div class="logo-custom">gh</div>
+                    <span class="logo-text">GHHomegoods</span>
+                </div>
+                
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><button class="nav-button active" id="homeBtn" onclick="showHome()">Home</button></li>
+                        <li><button class="nav-button" id="shopBtn" onclick="showShop()">Shop</button></li>
+                        <li><button class="nav-button hidden" id="adminBtn" onclick="showAdmin()">Admin (0)</button></li>
+                        <li><button class="nav-button hidden" id="logoutBtn" onclick="adminLogout()" style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(220, 38, 38, 0.5);">Logout</button></li>
+                    </ul>
+                    
+                    <button class="cart-button" onclick="showCart()">
+                        Cart
+                        <span class="cart-badge hidden" id="cartBadge">0</span>
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Home Page -->
+            <div id="homePage">
+                <div class="hero">
+                    <h1>Welcome to GHHomegoods</h1>
+                    <p>Your trusted source for baby care, household essentials, food & beverages, and personal care products. Quality brands at wholesale prices delivered to your door.</p>
+                    <button class="button" onclick="showShop()">Shop Now</button>
+                </div>
+                
+                <h2 class="section-title">Shop by Category</h2>
+                <div class="category-grid">
+                    <div class="category-card" onclick="showShop('baby-care')">
+                        <span class="category-icon">👶</span>
+                        <h3>Baby Care</h3>
+                        <p>Browse our baby care products</p>
+                    </div>
+                    <div class="category-card" onclick="showShop('food-beverages')">
+                        <span class="category-icon">🍎</span>
+                        <h3>Food & Beverages</h3>
+                        <p>Browse our food & beverages products</p>
+                    </div>
+                    <div class="category-card" onclick="showShop('cleaning-household')">
+                        <span class="category-icon">🧽</span>
+                        <h3>Cleaning & Household</h3>
+                        <p>Browse our cleaning & household products</p>
+                    </div>
+                    <div class="category-card" onclick="showShop('personal-care')">
+                        <span class="category-icon">🧴</span>
+                        <h3>Personal Care</h3>
+                        <p>Browse our personal care products</p>
+                    </div>
+                    <div class="category-card" onclick="showShop('storage-organization')">
+                        <span class="category-icon">📦</span>
+                        <h3>Storage & Organization</h3>
+                        <p>Browse our storage & organization products</p>
+                    </div>
+                </div>
+                
+                <h2 class="section-title">Featured Products</h2>
+                <div class="product-grid" id="featuredProducts">
+                    <!-- Featured products will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Shop Page -->
+            <div id="shopPage" class="hidden">
+                <h2 class="section-title">All Products</h2>
+                <div class="product-grid" id="allProducts">
+                    <!-- All products will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Admin Page -->
+            <div id="adminPage" class="hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 class="section-title" style="margin-bottom: 0;">Admin Dashboard</h2>
+                </div>
+                
+                <div style="background-color: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="color: #000; margin: 0;">📦 Product Management (<span id="productCount">8</span> products)</h3>
+                        <button class="button-secondary" id="refreshBtn" onclick="loadProductsFromGoogleSheets()">Refresh Products</button>
+                    </div>
+                    <div style="background-color: #fed7aa; padding: 1rem; border-radius: 0.5rem;">
+                        <p style="margin: 0; font-size: 0.9rem; color: #000;">
+                            📊 Configure your Google Sheets CSV URL in the code to automatically load products and images.
+                        </p>
+                    </div>
+                </div>
+                
+                <div style="background-color: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3 style="color: #000; margin: 0;">📋 Order Management (0 orders)</h3>
+                        <button class="button-secondary" onclick="clearOrders()">Clear All Orders</button>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 3rem; color: #6b7280;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                        <h3>No orders yet</h3>
+                        <p>Orders will appear here once customers place them</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <h3>GHHomegoods</h3>
+                <p style="color: #9ca3af; margin-bottom: 2rem;">
+                    Your trusted source for quality household essentials, baby care & personal care products
+                </p>
+                <div style="margin-bottom: 2rem;">
+                    <p style="color: #9ca3af;">
+                        📞 +233 20 123 4567 | 📧 orders@ghhomegoods.com
+                    </p>
+                    <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 0.5rem;">
+                        🚚 Free delivery in Greater Accra for orders over GH₵200
+                    </p>
+                </div>
+                <div class="payment-info">
+                    <p>💰 We accept MTN Mobile Money, Vodafone Cash & AirtelTigo Money</p>
+                </div>
+                <p style="color: #9ca3af; font-size: 0.875rem;">
+                    © 2025 GHHomegoods. All rights reserved. | Business Registration: Coming Soon
+                </p>
+                <button class="admin-access" id="adminAccessBtn" onclick="showAdminModal()">Admin Access</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Google Sheets Configuration - Using CORS proxy to avoid browser restrictions
+        const GOOGLE_SHEETS_CSV_URL = 'https://corsproxy.io/?https://docs.google.com/spreadsheets/d/14yjMXMc3AliGRemAPHU0GKPEBhW9h6Dzu6zv3kPC_fg/export?format=csv&gid=0';
+
+        // Sample fallback products (used if Google Sheets unavailable)
+        const fallbackProducts = [
+            {
+                id: 1,
+                name: 'Kirkland Baby Wipes (Pack of 9)',
+                price: 75.00,
+                originalPrice: 85.00,
+                category: 'baby-care',
+                description: 'Scented baby wipes - gentle and effective',
+                imageUrl: '',
+                featured: true
+            },
+            {
+                id: 2,
+                name: 'Kirkland Diapers Size 2 (112 count)',
+                price: 240.00,
+                category: 'baby-care',
+                description: 'Premium quality diapers for babies',
+                imageUrl: '',
+                featured: true
+            },
+            {
+                id: 3,
+                name: 'Honest Kids Organic Juice (40 pack)',
+                price: 191.50,
+                originalPrice: 210.00,
+                category: 'food-beverages',
+                description: 'Organic juice drinks variety pack',
+                imageUrl: '',
+                featured: true
+            },
+            {
+                id: 4,
+                name: 'Cheerios Honey Nut Cereal (27.5 oz)',
+                price: 72.50,
+                category: 'food-beverages',
+                description: 'Delicious honey nut breakfast cereal',
+                imageUrl: '',
+                featured: true
+            },
+            {
+                id: 5,
+                name: 'Clorox Disinfecting Wipes (5 pack)',
+                price: 87.67,
+                category: 'cleaning-household',
+                description: 'Multi-surface disinfecting wipes',
+                imageUrl: '',
+                featured: true
+            },
+            {
+                id: 6,
+                name: 'Dawn Platinum Dish Soap (20.5 fl oz)',
+                price: 48.33,
+                category: 'cleaning-household',
+                description: 'Premium grease-cutting dish soap',
+                imageUrl: '',
+                featured: false
+            },
+            {
+                id: 7,
+                name: 'Dove Beauty Bar Soap (16 bars)',
+                price: 28.38,
+                category: 'personal-care',
+                description: 'Moisturizing beauty bar soap',
+                imageUrl: '',
+                featured: true
+            },
+            {
+                id: 8,
+                name: 'Crest Pro-Health Mouthwash (33.8 fl oz)',
+                price: 51.83,
+                category: 'personal-care',
+                description: 'Advanced oral care mouthwash',
+                imageUrl: '',
+                featured: true
+            }
+        ];
+
+        // Admin configuration
+        const ADMIN_PASSWORD = 'GHAdmin2025!';
+        let isAdmin = false;
+        let currentView = 'home';
+        let products = [...fallbackProducts];
+        let isLoadingProducts = false;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('GHHomegoods website loaded successfully!');
+            loadProductsFromGoogleSheets();
+            
+            // Check for admin session
+            if (sessionStorage.getItem('gh_admin_session') === 'authenticated') {
+                setAdminMode(true);
+            }
+        });
+
+        // Load products from Google Sheets
+        async function loadProductsFromGoogleSheets() {
+            // Try multiple CORS proxy services
+            const corsProxies = [
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?',
+                'https://cors-anywhere.herokuapp.com/',
+                '' // Direct attempt (for when running on web server)
+            ];
+            
+            const baseUrl = 'https://docs.google.com/spreadsheets/d/14yjMXMc3AliGRemAPHU0GKPEBhW9h6Dzu6zv3kPC_fg/export?format=csv&gid=0';
+
+            setLoadingState(true);
+            
+            for (let i = 0; i < corsProxies.length; i++) {
+                const proxy = corsProxies[i];
+                const url = proxy + encodeURIComponent(baseUrl);
+                
+                try {
+                    console.log(`Attempting to load from: ${proxy ? 'Proxy ' + (i+1) : 'Direct'}`);
+                    console.log(`URL: ${url}`);
+                    
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'text/csv,text/plain,*/*'
+                        }
+                    });
+                    
+                    console.log(`Response status: ${response.status}`);
+                    console.log(`Response headers:`, response.headers);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const csvText = await response.text();
+                    console.log(`CSV data received (${csvText.length} characters)`);
+                    console.log('First 200 characters:', csvText.substring(0, 200));
+                    
+                    const parsedProducts = parseCSVProducts(csvText);
+                    
+                    if (parsedProducts.length > 0) {
+                        products = parsedProducts;
+                        console.log(`✅ SUCCESS! Loaded ${parsedProducts.length} products from Google Sheets`);
+                        showNotification(`Loaded ${parsedProducts.length} products from Google Sheets`, 'success');
+                        setLoadingState(false);
+                        loadProducts();
+                        updateProductCount();
+                        return; // Success, exit function
+                    } else {
+                        throw new Error('No valid products found in CSV data');
+                    }
+                    
+                } catch (error) {
+                    console.log(`❌ Attempt ${i+1} failed:`, error.message);
+                    console.log('Full error:', error);
+                    
+                    // Continue to next proxy
+                    if (i < corsProxies.length - 1) {
+                        console.log('Trying next method...');
+                        continue;
+                    }
+                }
+            }
+            
+            // All attempts failed
+            console.log('❌ All attempts failed. Using fallback products');
+            console.log('💡 Try these solutions:');
+            console.log('1. Make sure your Google Sheet is publicly accessible');
+            console.log('2. Run a local web server instead of opening file:// directly');
+            console.log('3. Upload your HTML file to a web hosting service');
+            
+            products = [...fallbackProducts];
+            showNotification('Could not load from Google Sheets. Using offline catalog.', 'warning');
+            
+            setLoadingState(false);
+            loadProducts();
+            updateProductCount();
+        }
+
+        // Parse CSV data into products
+        function parseCSVProducts(csvText) {
+            const lines = csvText.split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+            const products = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                if (values.length < headers.length) continue;
+                
+                const product = {};
+                
+                headers.forEach((header, index) => {
+                    let value = values[index]?.trim().replace(/"/g, '') || '';
+                    
+                    switch (header) {
+                        case 'id':
+                            product.id = parseInt(value) || i;
+                            break;
+                        case 'name':
+                            product.name = value;
+                            break;
+                        case 'price':
+                            product.price = parseFloat(value) || 0;
+                            break;
+                        case 'original_price':
+                        case 'originalprice':
+                            product.originalPrice = value ? parseFloat(value) : null;
+                            break;
+                        case 'category':
+                            product.category = value.toLowerCase();
+                            break;
+                        case 'description':
+                            product.description = value;
+                            break;
+                        case 'image_url':
+                        case 'imageurl':
+                            // Convert Google Drive view links to direct image links
+                            if (value.includes('drive.google.com')) {
+                                const fileIdMatch = value.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                                if (fileIdMatch) {
+                                    product.imageUrl = `https://drive.google.com/uc?id=${fileIdMatch[1]}`;
+                                } else {
+                                    product.imageUrl = value;
+                                }
+                            } else {
+                                product.imageUrl = value || '';
+                            }
+                            break;
+                        case 'in_stock':
+                        case 'instock':
+                            product.inStock = value.toLowerCase() === 'true';
+                            break;
+                        case 'featured':
+                            product.featured = value.toLowerCase() === 'true';
+                            break;
+                    }
+                });
+                
+                if (product.name && product.price > 0) {
+                    // Set defaults for missing fields
+                    product.inStock = product.inStock !== false;
+                    product.featured = product.featured === true;
+                    product.imageUrl = product.imageUrl || '';
+                    
+                    products.push(product);
+                }
+            }
+            
+            return products;
+        }
+
+        // Product loading functions
+        function loadProducts() {
+            const featuredContainer = document.getElementById('featuredProducts');
+            const allContainer = document.getElementById('allProducts');
+            
+            if (!featuredContainer || !allContainer) return;
+            
+            featuredContainer.innerHTML = '';
+            allContainer.innerHTML = '';
+            
+            products.forEach(product => {
+                const productHTML = createProductHTML(product);
+                
+                if (product.featured) {
+                    featuredContainer.innerHTML += productHTML;
+                }
+                allContainer.innerHTML += productHTML;
+            });
+        }
+
+        function createProductHTML(product) {
+            const imageHTML = product.imageUrl ? 
+                `<img src="${product.imageUrl}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <span style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%;">Product Image</span>` :
+                `<span>Product Image</span>`;
+
+            return `
+                <div class="product-card">
+                    <div class="product-image">
+                        ${product.originalPrice ? '<div class="sale-badge">SALE</div>' : ''}
+                        ${imageHTML}
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-description">${product.description}</p>
+                        <div class="price-container">
+                            <span class="current-price">GH₵ ${product.price.toFixed(2)}</span>
+                            ${product.originalPrice ? `<span class="original-price">GH₵ ${product.originalPrice.toFixed(2)}</span>` : ''}
+                        </div>
+                        <button class="button" onclick="addToCart(${product.id})" ${!product.inStock ? 'disabled' : ''}>
+                            ${product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Utility functions
+        function setLoadingState(loading) {
+            isLoadingProducts = loading;
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.disabled = loading;
+                refreshBtn.textContent = loading ? 'Loading...' : 'Refresh Products';
+            }
+        }
+
+        function updateProductCount() {
+            const productCountEl = document.getElementById('productCount');
+            if (productCountEl) {
+                productCountEl.textContent = products.length;
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 0.5rem;
+                color: white;
+                font-weight: bold;
+                z-index: 10000;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            
+            // Set color based on type
+            switch (type) {
+                case 'success':
+                    notification.style.backgroundColor = '#16a34a';
+                    break;
+                case 'warning':
+                    notification.style.backgroundColor = '#eab308';
+                    break;
+                case 'error':
+                    notification.style.backgroundColor = '#dc2626';
+                    break;
+                default:
+                    notification.style.backgroundColor = '#3b82f6';
+            }
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 4000);
+        }
+
+        // Admin keyboard shortcut (Ctrl+Shift+A)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                showAdminModal();
+            }
+        });
+
+        // Navigation functions
+        function showHome() {
+            setActiveView('home');
+            document.getElementById('homePage').classList.remove('hidden');
+            document.getElementById('shopPage').classList.add('hidden');
+            document.getElementById('adminPage').classList.add('hidden');
+        }
+
+        function showShop(category = null) {
+            setActiveView('shop');
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('shopPage').classList.remove('hidden');
+            document.getElementById('adminPage').classList.add('hidden');
+        }
+
+        function showAdmin() {
+            if (!isAdmin) {
+                showAdminModal();
+                return;
+            }
+            setActiveView('admin');
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('shopPage').classList.add('hidden');
+            document.getElementById('adminPage').classList.remove('hidden');
+        }
+
+        function setActiveView(view) {
+            currentView = view;
+            // Update navigation buttons
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const viewBtn = document.getElementById(view + 'Btn');
+            if (viewBtn) {
+                viewBtn.classList.add('active');
+            }
+        }
+
+        // Admin functions
+        function showAdminModal() {
+            document.getElementById('modalBackdrop').style.display = 'block';
+            document.getElementById('adminModal').style.display = 'block';
+            document.getElementById('adminPassword').focus();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('modalBackdrop').style.display = 'none';
+            document.getElementById('adminModal').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                setAdminMode(true);
+                sessionStorage.setItem('gh_admin_session', 'authenticated');
+                closeAdminModal();
+                showAdmin();
+            } else {
+                alert('Invalid admin password');
+                document.getElementById('adminPassword').value = '';
+            }
+        }
+
+        function adminLogout() {
+            setAdminMode(false);
+            sessionStorage.removeItem('gh_admin_session');
+            showHome();
+        }
+
+        function setAdminMode(admin) {
+            isAdmin = admin;
+            const adminBtn = document.getElementById('adminBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const adminNotice = document.getElementById('adminNotice');
+            const adminAccessBtn = document.getElementById('adminAccessBtn');
+            
+            if (admin) {
+                adminBtn.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+                adminNotice.style.display = 'block';
+                adminAccessBtn.classList.add('hidden');
+            } else {
+                adminBtn.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                adminNotice.style.display = 'none';
+                adminAccessBtn.classList.remove('hidden');
+            }
+        }
+
+        // Cart functions (simplified for demo)
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                console.log('Added to cart:', product.name);
+                showNotification(`Added ${product.name} to cart!`, 'success');
+            }
+        }
+
+        function showCart() {
+            showNotification('Cart functionality - Coming soon!', 'info');
+        }
+
+        function clearOrders() {
+            if (confirm('Are you sure you want to clear all orders? This cannot be undone.')) {
+                showNotification('Orders cleared successfully!', 'success');
+            }
+        }
+
+        // Handle password input enter key
+        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                adminLogin();
+            }
+        });
+
+        // Handle modal backdrop click
+        document.getElementById('modalBackdrop').addEventListener('click', closeAdminModal);
+    </script>
+</body>
+</html
