@@ -674,7 +674,8 @@
             display: none;
         }
         
-        /* IMPROVED: Responsive Design */
+        /* Footer */
+        .footer {
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -823,7 +824,7 @@
                 <!-- Search Section -->
                 <div class="search-section">
                     <div class="search-container">
-                        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search products by name, description, or category...">
+                        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search products... (Press Ctrl+K to focus)">
                         <div class="search-filters">
                             <button class="filter-btn active" onclick="filterByCategory('all')">All</button>
                             <button class="filter-btn" onclick="filterByCategory('baby-care')">Baby Care</button>
@@ -1006,6 +1007,9 @@
             
             // Initialize search functionality
             initializeSearch();
+            
+            // Initialize cart UI
+            updateCartUI();
         });
 
         // Initialize search functionality
@@ -1155,9 +1159,6 @@
                     const csvText = await response.text();
                     console.log(`CSV data received (${csvText.length} characters)`);
                     console.log('First 200 characters:', csvText.substring(0, 200));
-                    
-                    // ADD DEBUGGING HERE
-                    debugCSVStructure(csvText);
                     
                     const parsedProducts = parseCSVProducts(csvText);
                     
