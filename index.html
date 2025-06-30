@@ -282,7 +282,7 @@
           align-items: stretch;
         }
         
-        /* IMPROVED: Product Card with better height management */
+       
         .product-card {
             background-color: white;
             border-radius: 1rem;
@@ -294,8 +294,7 @@
             flex-direction: column;
             justify-content: space-between;
             height: 100%;
-            min-height: 450px; /* Increased to accommodate longer descriptions */
-        }
+            min-height: 450px; 
         
         .product-card:hover {
             transform: translateY(-8px);
@@ -325,7 +324,7 @@
             font-weight: bold;
         }
         
-        /* IMPROVED: Product Info with better flex layout */
+       
         .product-info {
             padding: 1.5rem;
             display: flex;
@@ -334,7 +333,7 @@
             justify-content: space-between;
         }
         
-        /* IMPROVED: Product Name with line clamping */
+      
         .product-name {
             font-size: 1.25rem;
             font-weight: bold;
@@ -347,7 +346,7 @@
             overflow: hidden;
         }
         
-        /* FIXED: Product Description - No more truncation! */
+       
         .product-description {
             color: #6b7280;
             font-size: 0.875rem;
@@ -1571,7 +1570,7 @@
                 const product = {};
                 
                 try {
-                    // Based on your exact sheet structure:
+                    // Based on the exact sheet structure:
                     // A=ID, B=Name, C=Price, D=Category, E=Number, F=Description, G=Image_URL
                     product.id = parseInt(values[0]) || i;                    // Column A: ID
                     product.name = values[1]?.trim() || `Product ${i}`;       // Column B: Name
@@ -1718,7 +1717,7 @@
             searchResults.textContent = message;
         }
 
-        // FIXED: Create product HTML with proper string escaping
+        Create product HTML with proper string escaping
         function createProductHTML(product) {
             // Escape product name and description for safe HTML insertion
             const safeName = product.name.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
