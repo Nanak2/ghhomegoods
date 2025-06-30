@@ -211,68 +211,6 @@
             display: block;
         }
         
-        /* Search Bar Styles */
-        .search-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            margin: 2rem 0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: 1px solid #e5e7eb;
-        }
-        
-        .search-container {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .search-input {
-            flex: 1;
-            min-width: 300px;
-            padding: 1rem 1.5rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 50px;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s;
-        }
-        
-        .search-input:focus {
-            border-color: #ea580c;
-            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
-        }
-        
-        .search-filters {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            padding: 0.75rem 1.5rem;
-            background: #f3f4f6;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .filter-btn:hover,
-        .filter-btn.active {
-            background: #ea580c;
-            color: white;
-        }
-        
-        .search-results {
-            margin-top: 1rem;
-            font-size: 0.875rem;
-            color: #6b7280;
-        }
-        
         /* IMPROVED: Product Grid */
         .product-grid {
           display: grid;
@@ -390,6 +328,68 @@
             font-size: 1rem;
             color: #6b7280;
             text-decoration: line-through;
+        }
+        
+        /* Search Bar Styles */
+        .search-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            border-color: #ea580c;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+        }
+        
+        .search-filters {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #ea580c;
+            color: white;
+        }
+        
+        .search-results {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: #6b7280;
         }
 
         /* Cart Modal Styles */
@@ -552,17 +552,6 @@
             cursor: pointer;
         }
         
-        .empty-cart {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: #6b7280;
-        }
-        
-        .empty-cart-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
         /* Checkout Modal Styles */
         .checkout-modal {
             position: fixed;
@@ -814,9 +803,6 @@
             background: #dc2626;
             color: white;
         }
-        
-        /* Footer */
-        .footer {
             background: linear-gradient(135deg, #000000 0%, #1f2937 100%);
             color: white;
             padding: 3rem 1rem;
@@ -929,7 +915,8 @@
             display: none;
         }
         
-        /* IMPROVED: Responsive Design */
+        /* Footer */
+        .footer {
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -1296,37 +1283,6 @@
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
             console.log('GHHomegoods website loaded successfully!');
-            
-            // 📥 LOAD SAVED CART FROM LOCALSTORAGE
-            const savedCart = localStorage.getItem('gh_cart');
-            if (savedCart) {
-                try {
-                    cart = JSON.parse(savedCart);
-                    console.log('💾 Loaded cart from localStorage:', cart);
-                } catch (error) {
-                    console.log('Error loading cart from localStorage:', error);
-                    cart = [];
-                }
-            }
-            
-            // 📥 LOAD SAVED ORDERS FROM LOCALSTORAGE
-            const savedOrders = localStorage.getItem('gh_order_history');
-            if (savedOrders) {
-                try {
-                    orders = JSON.parse(savedOrders);
-                    console.log('💾 Loaded order history from localStorage:', orders);
-                } catch (error) {
-                    console.log('Error loading orders from localStorage:', error);
-                    orders = [];
-                }
-            }
-            
-            // 📥 LOAD ORDER COUNTER FROM LOCALSTORAGE
-            const savedCounter = localStorage.getItem('gh_order_counter');
-            if (savedCounter) {
-                orderCounter = parseInt(savedCounter) || 1000;
-            }
-            
             loadProductsFromGoogleSheets();
             
             // Check for admin session
@@ -1505,9 +1461,6 @@
                         setLoadingState(false);
                         loadProducts();
                         updateProductCount();
-                        
-                        // Initialize search state
-                        filteredProducts = [...products];
                         
                         // Debug image URLs after loading
                         setTimeout(() => {
@@ -1815,6 +1768,160 @@
             }, 4000);
         }
 
+        // Admin keyboard shortcut (Ctrl+Shift+A) and other shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                showAdminModal();
+            }
+            
+            // Close cart/checkout with Escape key
+            if (e.key === 'Escape') {
+                closeCart();
+                closeCheckout();
+                closeAdminModal();
+            }
+            
+            // Search shortcut (Ctrl+K or Cmd+K)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput && !document.getElementById('shopPage').classList.contains('hidden')) {
+                    searchInput.focus();
+                }
+            }
+        });
+
+        // Close cart/checkout when clicking outside
+        document.addEventListener('click', function(e) {
+            const cartModal = document.getElementById('cartModal');
+            const checkoutModal = document.getElementById('checkoutModal');
+            const cartButton = document.querySelector('.cart-button');
+            
+            if (cartModal.classList.contains('open') && 
+                !cartModal.contains(e.target) && 
+                !cartButton.contains(e.target)) {
+                closeCart();
+            }
+            
+            if (checkoutModal.style.display === 'flex' && 
+                e.target === checkoutModal) {
+                closeCheckout();
+            }
+        });
+
+        // Navigation functions
+        function showHome() {
+            setActiveView('home');
+            document.getElementById('homePage').classList.remove('hidden');
+            document.getElementById('shopPage').classList.add('hidden');
+            document.getElementById('adminPage').classList.add('hidden');
+        }
+
+        function showShop(category = null) {
+            setActiveView('shop');
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('shopPage').classList.remove('hidden');
+            document.getElementById('adminPage').classList.add('hidden');
+            
+            // Initialize search if not already done
+            initializeSearch();
+            
+            // Apply category filter if specified
+            if (category) {
+                currentFilter = category;
+                // Update filter buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase().includes(category.replace('-', ' '))) {
+                        btn.classList.add('active');
+                    }
+                });
+                updateProductDisplay();
+            }
+        }
+
+        function showAdmin() {
+            if (!isAdmin) {
+                showAdminModal();
+                return;
+            }
+            setActiveView('admin');
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('shopPage').classList.add('hidden');
+            document.getElementById('adminPage').classList.remove('hidden');
+            
+            // Update order display when showing admin page
+            updateOrderDisplay();
+        }
+
+        function setActiveView(view) {
+            currentView = view;
+            // Update navigation buttons
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const viewBtn = document.getElementById(view + 'Btn');
+            if (viewBtn) {
+                viewBtn.classList.add('active');
+            }
+        }
+
+        // Admin functions
+        function showAdminModal() {
+            document.getElementById('modalBackdrop').style.display = 'block';
+            document.getElementById('adminModal').style.display = 'block';
+            document.getElementById('adminPassword').focus();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('modalBackdrop').style.display = 'none';
+            document.getElementById('adminModal').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                setAdminMode(true);
+                sessionStorage.setItem('gh_admin_session', 'authenticated');
+                closeAdminModal();
+                showAdmin();
+            } else {
+                alert('Invalid admin password');
+                document.getElementById('adminPassword').value = '';
+            }
+        }
+
+        function adminLogout() {
+            setAdminMode(false);
+            sessionStorage.removeItem('gh_admin_session');
+            showHome();
+        }
+
+        function setAdminMode(admin) {
+            isAdmin = admin;
+            const adminBtn = document.getElementById('adminBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const adminNotice = document.getElementById('adminNotice');
+            const adminAccessBtn = document.getElementById('adminAccessBtn');
+            
+            if (admin) {
+                adminBtn.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+                adminNotice.style.display = 'block';
+                adminAccessBtn.classList.add('hidden');
+                
+                // Initialize order display for admin
+                updateOrderDisplay();
+            } else {
+                adminBtn.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                adminNotice.style.display = 'none';
+                adminAccessBtn.classList.remove('hidden');
+            }
+        }
+
         // Cart functions
         function addToCart(productId) {
             const product = products.find(p => p.id === productId);
@@ -1880,13 +1987,6 @@
         function updateCartUI() {
             updateCartBadge();
             updateCartContent();
-            
-            // 💾 SAVE CART TO LOCALSTORAGE
-            try {
-                localStorage.setItem('gh_cart', JSON.stringify(cart));
-            } catch (error) {
-                console.log('Error saving cart to localStorage:', error);
-            }
         }
 
         function updateCartBadge() {
@@ -2096,14 +2196,6 @@
             
             orders.unshift(order); // Add to beginning of array
             
-            // 💾 SAVE ORDER HISTORY TO LOCALSTORAGE
-            try {
-                localStorage.setItem('gh_order_history', JSON.stringify(orders));
-                localStorage.setItem('gh_order_counter', orderCounter.toString());
-            } catch (error) {
-                console.log('Error saving order to localStorage:', error);
-            }
-            
             // Update admin order display
             updateOrderDisplay();
             
@@ -2112,7 +2204,7 @@
             
             // Clear cart
             cart = [];
-            updateCartUI(); // This will also clear localStorage cart
+            updateCartUI();
         }
 
         function showPaymentInstructions(order) {
@@ -2274,13 +2366,6 @@
                 order.status = newStatus;
                 updateOrderDisplay();
                 
-                // 💾 SYNC TO LOCALSTORAGE
-                try {
-                    localStorage.setItem('gh_order_history', JSON.stringify(orders));
-                } catch (error) {
-                    console.log('Error saving order status to localStorage:', error);
-                }
-                
                 const statusMessages = {
                     'confirmed': 'Payment confirmed! Order is ready for delivery.',
                     'completed': 'Order marked as delivered.'
@@ -2294,14 +2379,6 @@
             if (confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
                 orders = orders.filter(o => o.id !== orderId);
                 updateOrderDisplay();
-                
-                // 💾 SYNC TO LOCALSTORAGE
-                try {
-                    localStorage.setItem('gh_order_history', JSON.stringify(orders));
-                } catch (error) {
-                    console.log('Error saving orders to localStorage:', error);
-                }
-                
                 showNotification('Order cancelled successfully', 'info');
             }
         }
@@ -2358,178 +2435,12 @@
 
         function clearAllData() {
             if (confirm('This will clear all cart items and order history. Are you sure?')) {
-                // Clear all data
                 cart = [];
                 orders = [];
                 orderCounter = 1000;
-                
-                // Clear localStorage
-                try {
-                    localStorage.removeItem('gh_cart');
-                    localStorage.removeItem('gh_order_history');
-                    localStorage.removeItem('gh_order_counter');
-                } catch (error) {
-                    console.log('Error clearing localStorage:', error);
-                }
-                
-                // Update UI
                 updateCartUI();
                 updateOrderDisplay();
                 showNotification('All data cleared successfully', 'info');
-            }
-        }
-
-        // Admin keyboard shortcut (Ctrl+Shift+A) and other shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-                e.preventDefault();
-                showAdminModal();
-            }
-            
-            // Close cart/checkout with Escape key
-            if (e.key === 'Escape') {
-                closeCart();
-                closeCheckout();
-                closeAdminModal();
-            }
-            
-            // Search shortcut (Ctrl+K or Cmd+K)
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput && !document.getElementById('shopPage').classList.contains('hidden')) {
-                    searchInput.focus();
-                }
-            }
-        });
-
-        // Close cart/checkout when clicking outside
-        document.addEventListener('click', function(e) {
-            const cartModal = document.getElementById('cartModal');
-            const checkoutModal = document.getElementById('checkoutModal');
-            const cartButton = document.querySelector('.cart-button');
-            
-            if (cartModal.classList.contains('open') && 
-                !cartModal.contains(e.target) && 
-                !cartButton.contains(e.target)) {
-                closeCart();
-            }
-            
-            if (checkoutModal.style.display === 'flex' && 
-                e.target === checkoutModal) {
-                closeCheckout();
-            }
-        });
-
-        // Navigation functions
-        function showHome() {
-            setActiveView('home');
-            document.getElementById('homePage').classList.remove('hidden');
-            document.getElementById('shopPage').classList.add('hidden');
-            document.getElementById('adminPage').classList.add('hidden');
-        }
-
-        function showShop(category = null) {
-            setActiveView('shop');
-            document.getElementById('homePage').classList.add('hidden');
-            document.getElementById('shopPage').classList.remove('hidden');
-            document.getElementById('adminPage').classList.add('hidden');
-            
-            // Initialize search if not already done
-            initializeSearch();
-            
-            // Apply category filter if specified
-            if (category) {
-                currentFilter = category;
-                // Update filter buttons
-                document.querySelectorAll('.filter-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.textContent.toLowerCase().includes(category.replace('-', ' '))) {
-                        btn.classList.add('active');
-                    }
-                });
-                updateProductDisplay();
-            }
-        }
-
-        function showAdmin() {
-            if (!isAdmin) {
-                showAdminModal();
-                return;
-            }
-            setActiveView('admin');
-            document.getElementById('homePage').classList.add('hidden');
-            document.getElementById('shopPage').classList.add('hidden');
-            document.getElementById('adminPage').classList.remove('hidden');
-            
-            // Update order display when showing admin page
-            updateOrderDisplay();
-        }
-
-        function setActiveView(view) {
-            currentView = view;
-            // Update navigation buttons
-            document.querySelectorAll('.nav-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            const viewBtn = document.getElementById(view + 'Btn');
-            if (viewBtn) {
-                viewBtn.classList.add('active');
-            }
-        }
-
-        // Admin functions
-        function showAdminModal() {
-            document.getElementById('modalBackdrop').style.display = 'block';
-            document.getElementById('adminModal').style.display = 'block';
-            document.getElementById('adminPassword').focus();
-        }
-
-        function closeAdminModal() {
-            document.getElementById('modalBackdrop').style.display = 'none';
-            document.getElementById('adminModal').style.display = 'none';
-            document.getElementById('adminPassword').value = '';
-        }
-
-        function adminLogin() {
-            const password = document.getElementById('adminPassword').value;
-            if (password === ADMIN_PASSWORD) {
-                setAdminMode(true);
-                sessionStorage.setItem('gh_admin_session', 'authenticated');
-                closeAdminModal();
-                showAdmin();
-            } else {
-                alert('Invalid admin password');
-                document.getElementById('adminPassword').value = '';
-            }
-        }
-
-        function adminLogout() {
-            setAdminMode(false);
-            sessionStorage.removeItem('gh_admin_session');
-            showHome();
-        }
-
-        function setAdminMode(admin) {
-            isAdmin = admin;
-            const adminBtn = document.getElementById('adminBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const adminNotice = document.getElementById('adminNotice');
-            const adminAccessBtn = document.getElementById('adminAccessBtn');
-            
-            if (admin) {
-                adminBtn.classList.remove('hidden');
-                logoutBtn.classList.remove('hidden');
-                adminNotice.style.display = 'block';
-                adminAccessBtn.classList.add('hidden');
-                
-                // Initialize order display for admin
-                updateOrderDisplay();
-            } else {
-                adminBtn.classList.add('hidden');
-                logoutBtn.classList.add('hidden');
-                adminNotice.style.display = 'none';
-                adminAccessBtn.classList.remove('hidden');
             }
         }
 
