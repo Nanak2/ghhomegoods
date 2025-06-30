@@ -1,2546 +1,1169 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHHomegoods - Your Trusted Source for Quality Products</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+import React, { useState, useEffect } from 'react';
+
+function App() {
+  const [cartItems, setCartItems] = useState([]);
+  const [showCart, setShowCart] = useState(false);
+  const [showCartPreview, setShowCartPreview] = useState(false);
+  const [currentView, setCurrentView] = useState('home');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isCheckout, setIsCheckout] = useState(false);
+  const [orderConfirmed, setOrderConfirmed] = useState(false);
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    city: '',
+    region: '',
+    notes: ''
+  });
+  const [currentOrder, setCurrentOrder] = useState(null);
+
+  const products = [
+    {
+      id: 1,
+      name: 'Ceramic Coffee Mug Set',
+      price: 35.00,
+      originalPrice: 45.00,
+      category: 'kitchen',
+      description: 'Set of 2 elegant ceramic mugs',
+      inStock: true,
+      featured: true
+    },
+    {
+      id: 2,
+      name: 'Bamboo Cutting Board',
+      price: 45.00,
+      category: 'kitchen',
+      description: 'Durable bamboo cutting board',
+      inStock: true,
+      featured: true
+    },
+    {
+      id: 3,
+      name: 'Cotton Bed Sheet Set',
+      price: 120.00,
+      originalPrice: 150.00,
+      category: 'bedroom',
+      description: 'Premium cotton bed sheets',
+      inStock: true,
+      featured: true
+    },
+    {
+      id: 4,
+      name: 'Bath Towel Set',
+      price: 65.00,
+      category: 'bathroom',
+      description: 'Set of 4 cotton bath towels',
+      inStock: true,
+      featured: true
+    },
+    {
+      id: 5,
+      name: 'Throw Pillows',
+      price: 25.00,
+      category: 'living-room',
+      description: 'Set of 2 decorative pillows',
+      inStock: true,
+      featured: false
+    },
+    {
+      id: 6,
+      name: 'Stainless Steel Pot Set',
+      price: 149.99,
+      originalPrice: 199.99,
+      category: 'kitchen',
+      description: '5-piece cooking pot set',
+      inStock: true,
+      featured: true
+    }
+  ];
+
+  const categories = [
+    { id: 'all', name: 'All Products', icon: '🏠' },
+    { id: 'kitchen', name: 'Kitchen', icon: '🍳' },
+    { id: 'bedroom', name: 'Bedroom', icon: '🛏️' },
+    { id: 'bathroom', name: 'Bathroom', icon: '🚿' },
+    { id: 'living-room', name: 'Living Room', icon: '🛋️' }
+  ];
+
+  const regions = [
+    { id: 'greater-accra', name: 'Greater Accra', fee: 15.00 },
+    { id: 'ashanti', name: 'Ashanti', fee: 25.00 },
+    { id: 'western', name: 'Western', fee: 30.00 },
+    { id: 'eastern', name: 'Eastern', fee: 20.00 },
+    { id: 'central', name: 'Central', fee: 25.00 },
+    { id: 'northern', name: 'Northern', fee: 40.00 }
+  ];
+
+  // Orange, White & Black Theme Colors
+  const theme = {
+    primary: '#ea580c',
+    primaryHover: '#c2410c',
+    primaryLight: '#fed7aa',
+    secondary: '#f97316',
+    success: '#16a34a',
+    warning: '#eab308',
+    error: '#dc2626',
+    black: '#000000',
+    darkGray: '#1f2937',
+    mediumGray: '#6b7280',
+    lightGray: '#f3f4f6',
+    border: '#e5e7eb',
+    white: '#ffffff',
+    offWhite: '#fafafa'
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem('cart');
+    if (saved) {
+      try {
+        setCartItems(JSON.parse(saved));
+      } catch (e) {
+        console.log('Error loading cart');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const addToCart = (product) => {
+    const existing = cartItems.find(item => item.id === product.id);
+    
+    if (existing) {
+      setCartItems(cartItems.map(item =>
+        item.id === product.id
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCartItems([...cartItems, { ...product, quantity: 1 }]);
+    }
+    
+    setShowCartPreview(true);
+    setTimeout(() => setShowCartPreview(false), 2000);
+  };
+
+  const removeFromCart = (id) => {
+    const existing = cartItems.find(item => item.id === id);
+    
+    if (existing && existing.quantity > 1) {
+      setCartItems(cartItems.map(item =>
+        item.id === id
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      ));
+    } else {
+      setCartItems(cartItems.filter(item => item.id !== id));
+    }
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
+  const getTotalItems = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const getTotalPrice = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const getDeliveryFee = (regionId) => {
+    const region = regions.find(r => r.id === regionId);
+    return region ? region.fee : 20.00;
+  };
+
+  const getFilteredProducts = () => {
+    let filtered = products;
+
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(p => p.category === selectedCategory);
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return filtered;
+  };
+
+  const generateOrderId = () => {
+    return 'GH' + Date.now().toString(36).toUpperCase();
+  };
+
+  const handleInputChange = (field, value) => {
+    setCustomerInfo({ ...customerInfo, [field]: value });
+  };
+
+  const validateForm = () => {
+    return customerInfo.name && customerInfo.phone && 
+           customerInfo.address && customerInfo.city && customerInfo.region;
+  };
+
+  const submitOrder = () => {
+    if (!validateForm()) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    const deliveryFee = getDeliveryFee(customerInfo.region);
+    const subtotal = getTotalPrice();
+    const total = subtotal + deliveryFee;
+
+    const order = {
+      id: generateOrderId(),
+      customerInfo: { ...customerInfo },
+      items: [...cartItems],
+      subtotal,
+      deliveryFee,
+      total,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    orders.push(order);
+    localStorage.setItem('orders', JSON.stringify(orders));
+
+    setCurrentOrder(order);
+    setOrderConfirmed(true);
+    setCartItems([]);
+  };
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      backgroundColor: theme.offWhite,
+      fontFamily: 'Arial, sans-serif'
+    },
+    header: {
+      background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`,
+      color: theme.white,
+      padding: '1rem',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+    },
+    headerContent: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '1rem'
+    },
+    logo: {
+      fontSize: '1.75rem',
+      fontWeight: 'bold',
+      color: theme.white,
+      cursor: 'pointer',
+      transition: 'transform 0.2s'
+    },
+    nav: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '2rem'
+    },
+    navList: {
+      display: 'flex',
+      listStyle: 'none',
+      gap: '1rem',
+      margin: 0,
+      padding: 0
+    },
+    navLink: {
+      color: theme.white,
+      textDecoration: 'none',
+      padding: '0.75rem 1rem',
+      cursor: 'pointer',
+      borderRadius: '0.5rem',
+      fontWeight: '500',
+      transition: 'all 0.2s'
+    },
+    navLinkActive: {
+      backgroundColor: 'rgba(255, 255, 255, 0.2)'
+    },
+    searchBar: {
+      padding: '0.75rem 1rem',
+      borderRadius: '25px',
+      border: 'none',
+      width: '220px',
+      fontSize: '14px',
+      backgroundColor: theme.white,
+      color: theme.black
+    },
+    cartButton: {
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      color: theme.white,
+      border: `2px solid ${theme.white}`,
+      padding: '0.75rem 1.25rem',
+      borderRadius: '25px',
+      cursor: 'pointer',
+      position: 'relative',
+      fontWeight: '600',
+      transition: 'all 0.2s'
+    },
+    cartBadge: {
+      position: 'absolute',
+      top: '-8px',
+      right: '-8px',
+      backgroundColor: theme.error,
+      color: theme.white,
+      borderRadius: '50%',
+      width: '24px',
+      height: '24px',
+      fontSize: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: 'bold',
+      border: `2px solid ${theme.white}`
+    },
+    main: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '1rem'
+    },
+    hero: {
+      background: `linear-gradient(135deg, ${theme.white} 0%, ${theme.primaryLight} 100%)`,
+      borderRadius: '1rem',
+      padding: '4rem 2rem',
+      margin: '2rem 0',
+      textAlign: 'center',
+      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+      border: `1px solid ${theme.border}`
+    },
+    heroTitle: {
+      fontSize: '3rem',
+      fontWeight: 'bold',
+      color: theme.black,
+      marginBottom: '1rem'
+    },
+    heroSubtitle: {
+      fontSize: '1.25rem',
+      color: theme.mediumGray,
+      marginBottom: '2rem',
+      maxWidth: '600px',
+      margin: '0 auto 2rem auto'
+    },
+    categoryGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+      gap: '1.5rem',
+      margin: '3rem 0'
+    },
+    categoryCard: {
+      backgroundColor: theme.white,
+      padding: '2rem',
+      borderRadius: '1rem',
+      textAlign: 'center',
+      cursor: 'pointer',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+      border: `2px solid ${theme.border}`,
+      transition: 'all 0.3s'
+    },
+    productGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+      gap: '2rem',
+      marginTop: '2rem'
+    },
+    productCard: {
+      backgroundColor: theme.white,
+      borderRadius: '1rem',
+      overflow: 'hidden',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+      border: `1px solid ${theme.border}`,
+      transition: 'all 0.3s'
+    },
+    productImage: {
+      width: '100%',
+      height: '220px',
+      background: `linear-gradient(135deg, ${theme.lightGray} 0%, ${theme.primaryLight} 100%)`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: theme.mediumGray,
+      position: 'relative'
+    },
+    saleBadge: {
+      position: 'absolute',
+      top: '1rem',
+      left: '1rem',
+      backgroundColor: theme.error,
+      color: theme.white,
+      padding: '0.5rem 0.75rem',
+      borderRadius: '20px',
+      fontSize: '12px',
+      fontWeight: 'bold'
+    },
+    productInfo: {
+      padding: '1.5rem'
+    },
+    productName: {
+      fontSize: '1.25rem',
+      fontWeight: 'bold',
+      color: theme.black,
+      marginBottom: '0.5rem'
+    },
+    productDescription: {
+      color: theme.mediumGray,
+      fontSize: '0.875rem',
+      marginBottom: '1rem'
+    },
+    priceContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem',
+      marginBottom: '1.5rem'
+    },
+    currentPrice: {
+      fontSize: '1.5rem',
+      fontWeight: 'bold',
+      color: theme.primary
+    },
+    originalPrice: {
+      fontSize: '1rem',
+      color: theme.mediumGray,
+      textDecoration: 'line-through'
+    },
+    button: {
+      background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`,
+      color: theme.white,
+      padding: '0.875rem 2rem',
+      border: 'none',
+      borderRadius: '25px',
+      cursor: 'pointer',
+      fontSize: '1rem',
+      fontWeight: '600',
+      transition: 'all 0.2s',
+      width: '100%'
+    },
+    buttonSecondary: {
+      backgroundColor: theme.white,
+      color: theme.primary,
+      border: `2px solid ${theme.primary}`,
+      padding: '0.875rem 2rem',
+      borderRadius: '25px',
+      cursor: 'pointer',
+      fontSize: '1rem',
+      fontWeight: '600',
+      transition: 'all 0.2s'
+    },
+    input: {
+      width: '100%',
+      padding: '1rem',
+      border: `2px solid ${theme.border}`,
+      borderRadius: '0.5rem',
+      marginBottom: '1rem',
+      fontSize: '1rem',
+      backgroundColor: theme.white
+    },
+    select: {
+      width: '100%',
+      padding: '1rem',
+      border: `2px solid ${theme.border}`,
+      borderRadius: '0.5rem',
+      marginBottom: '1rem',
+      fontSize: '1rem',
+      backgroundColor: theme.white,
+      cursor: 'pointer'
+    },
+    textarea: {
+      width: '100%',
+      padding: '1rem',
+      border: `2px solid ${theme.border}`,
+      borderRadius: '0.5rem',
+      marginBottom: '1rem',
+      minHeight: '120px',
+      fontSize: '1rem',
+      resize: 'vertical',
+      backgroundColor: theme.white
+    },
+    checkoutBox: {
+      maxWidth: '700px',
+      margin: '0 auto',
+      backgroundColor: theme.white,
+      padding: '3rem',
+      borderRadius: '1rem',
+      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+      border: `1px solid ${theme.border}`
+    },
+    orderSummary: {
+      background: `linear-gradient(135deg, ${theme.offWhite} 0%, ${theme.primaryLight} 100%)`,
+      padding: '2rem',
+      borderRadius: '1rem',
+      marginBottom: '2rem',
+      border: `1px solid ${theme.border}`
+    },
+    cartOverlay: {
+      position: 'fixed',
+      top: 0,
+      right: 0,
+      width: '420px',
+      height: '100vh',
+      backgroundColor: theme.white,
+      boxShadow: '-10px 0 25px rgba(0,0,0,0.15)',
+      padding: '2rem',
+      overflowY: 'auto',
+      zIndex: 1000,
+      borderLeft: `3px solid ${theme.primary}`
+    },
+    backdrop: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      zIndex: 999
+    },
+    cartPreview: {
+      position: 'fixed',
+      top: '80px',
+      right: '20px',
+      width: '320px',
+      backgroundColor: theme.white,
+      border: `2px solid ${theme.primary}`,
+      borderRadius: '1rem',
+      padding: '1.5rem',
+      boxShadow: `0 20px 40px rgba(234, 88, 12, 0.2)`,
+      zIndex: 1001
+    },
+    cartItem: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '1rem 0',
+      borderBottom: `1px solid ${theme.border}`
+    },
+    quantityButton: {
+      width: '36px',
+      height: '36px',
+      border: `2px solid ${theme.primary}`,
+      backgroundColor: theme.white,
+      color: theme.primary,
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '50%',
+      fontWeight: 'bold',
+      transition: 'all 0.2s'
+    },
+    footer: {
+      background: `linear-gradient(135deg, ${theme.black} 0%, ${theme.darkGray} 100%)`,
+      color: theme.white,
+      padding: '3rem 1rem',
+      marginTop: '4rem'
+    },
+    sectionTitle: {
+      fontSize: '2.5rem',
+      fontWeight: 'bold',
+      color: theme.black,
+      marginBottom: '2rem',
+      textAlign: 'center'
+    },
+    filterBar: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '2rem',
+      flexWrap: 'wrap',
+      gap: '1rem',
+      backgroundColor: theme.white,
+      padding: '1.5rem',
+      borderRadius: '1rem',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+      border: `1px solid ${theme.border}`
+    }
+  };
+
+  const ProductCard = ({ product }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    
+    return (
+      <div 
+        style={{
+          ...styles.productCard,
+          transform: isHovered ? 'translateY(-8px)' : 'translateY(0)',
+          boxShadow: isHovered ? `0 20px 40px rgba(234, 88, 12, 0.15)` : '0 4px 6px rgba(0,0,0,0.05)'
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div style={styles.productImage}>
+          {product.originalPrice && (
+            <div style={styles.saleBadge}>
+              SALE
+            </div>
+          )}
+          <span>Product Image</span>
+        </div>
         
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fafafa;
-            line-height: 1.6;
-        }
-        
-        .container {
-            min-height: 100vh;
-        }
-        
-        /* Header Styles */
-        .header {
-            background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
-            color: white;
-            padding: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            cursor: pointer;
-        }
-        
-        .logo-custom {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-            border: 3px solid #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #000;
-        }
-        
-        .logo-text {
-            font-size: 1.75rem;
-            font-weight: bold;
-        }
-        
-        .nav {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-        
-        .nav-list {
-            display: flex;
-            list-style: none;
-            gap: 1rem;
-        }
-        
-        .nav-button {
-            background: none;
-            border: none;
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-            font-size: 1rem;
-        }
-        
-        .nav-button:hover,
-        .nav-button.active {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .cart-button {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid white;
-            padding: 0.75rem 1.25rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            position: relative;
-        }
-        
-        .cart-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: #dc2626;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            border: 2px solid white;
-        }
-        
-        /* Main Content */
-        .main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-        
-        .hero {
-            background: linear-gradient(135deg, #ffffff 0%, #fed7aa 100%);
-            border-radius: 1rem;
-            padding: 4rem 2rem;
-            margin: 2rem 0;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border: 1px solid #e5e7eb;
-        }
-        
-        .hero h1 {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #000;
-            margin-bottom: 1rem;
-        }
-        
-        .hero p {
-            font-size: 1.25rem;
-            color: #6b7280;
-            margin-bottom: 2rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .button {
-            background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
-            color: white;
-            padding: 0.875rem 2rem;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.2s;
-            margin-top: auto;
-        }
-        
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(234, 88, 12, 0.3);
-        }
-        
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #000;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        
-        /* Category Grid */
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin: 3rem 0;
-        }
-        
-        .category-card {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            text-align: center;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: 2px solid #e5e7eb;
-            transition: all 0.3s;
-        }
-        
-        .category-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(234, 88, 12, 0.15);
-            border-color: #ea580c;
-        }
-        
-        .category-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-        
-        /* Search Bar Styles */
-        .search-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            margin: 2rem 0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: 1px solid #e5e7eb;
-        }
-        
-        .search-container {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .search-input {
-            flex: 1;
-            min-width: 300px;
-            padding: 1rem 1.5rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 50px;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s;
-        }
-        
-        .search-input:focus {
-            border-color: #ea580c;
-            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
-        }
-        
-        .search-filters {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            padding: 0.75rem 1.5rem;
-            background: #f3f4f6;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .filter-btn:hover,
-        .filter-btn.active {
-            background: #ea580c;
-            color: white;
-        }
-        
-        .search-results {
-            margin-top: 1rem;
-            font-size: 0.875rem;
-            color: #6b7280;
-        }
-        
-        /* IMPROVED: Product Grid */
-        .product-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 2rem;
-          margin-top: 2rem;
-          align-items: stretch;
-        }
-        
-       
-        .product-card {
-            background-color: white;
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: 1px solid #e5e7eb;
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-            min-height: 450px; 
-        
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(234, 88, 12, 0.15);
-        }
-        
-        .product-image {
-            width: 100%;
-            height: 220px;
-            background: linear-gradient(135deg, #f3f4f6 0%, #fed7aa 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6b7280;
-            position: relative;
-        }
-        
-        .sale-badge {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            background-color: #dc2626;
-            color: white;
-            padding: 0.5rem 0.75rem;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-       
-        .product-info {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            justify-content: space-between;
-        }
-        
+        <div style={styles.productInfo}>
+          <h3 style={styles.productName}>
+            {product.name}
+          </h3>
+          <p style={styles.productDescription}>
+            {product.description}
+          </p>
+          
+          <div style={styles.priceContainer}>
+            <span style={styles.currentPrice}>
+              GH₵ {product.price.toFixed(2)}
+            </span>
+            {product.originalPrice && (
+              <span style={styles.originalPrice}>
+                GH₵ {product.originalPrice.toFixed(2)}
+              </span>
+            )}
+          </div>
+          
+          <button 
+            style={styles.button}
+            onClick={() => addToCart(product)}
+          >
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const CategoryCard = ({ category }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    
+    return (
+      <div
+        style={{
+          ...styles.categoryCard,
+          transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
+          boxShadow: isHovered ? `0 20px 40px rgba(234, 88, 12, 0.15)` : '0 4px 6px rgba(0,0,0,0.05)',
+          borderColor: isHovered ? theme.primary : theme.border
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => {
+          setCurrentView('shop');
+          setSelectedCategory(category.id);
+        }}
+      >
+        <span style={{ fontSize: '3rem', marginBottom: '1rem', display: 'block' }}>
+          {category.icon}
+        </span>
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: theme.black, marginBottom: '0.5rem' }}>
+          {category.name}
+        </h3>
+        <p style={{ color: theme.mediumGray, fontSize: '0.875rem' }}>
+          Discover our {category.name.toLowerCase()} collection
+        </p>
+      </div>
+    );
+  };
+
+  const renderHome = () => (
+    <>
+      <div style={styles.hero}>
+        <h1 style={styles.heroTitle}>
+          Welcome to GHHomegoods
+        </h1>
+        <p style={styles.heroSubtitle}>
+          Your one-stop shop for quality home essentials at affordable prices. 
+          Transform your living space with our carefully curated collection.
+        </p>
+        <button 
+          style={styles.button}
+          onClick={() => setCurrentView('shop')}
+        >
+          Shop Now
+        </button>
+      </div>
       
-        .product-name {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: #000;
-            margin-bottom: 0.75rem;
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-       
-        .product-description {
-            color: #6b7280;
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-            white-space: normal;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            
-            /* Remove any height restrictions that truncate text */
-            height: auto;
-            max-height: none;
-            overflow: visible;
-            text-overflow: clip;
-            
-            /* Ensure minimum space */
-            min-height: 2.5rem;
-            padding-bottom: 0.25rem;
-            
-            /* Allow text to grow and take available space */
-            flex-grow: 1;
-        }
-        
-        /* IMPROVED: Price Container pushed to bottom */
-        .price-container {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-            margin-top: auto;
-        }
-        
-        .current-price {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #ea580c;
-        }
-        
-        .original-price {
-            font-size: 1rem;
-            color: #6b7280;
-            text-decoration: line-through;
-        }
+      <h2 style={styles.sectionTitle}>Shop by Category</h2>
+      <div style={styles.categoryGrid}>
+        {categories.filter(cat => cat.id !== 'all').map(category => (
+          <CategoryCard key={category.id} category={category} />
+        ))}
+      </div>
+      
+      <h2 style={styles.sectionTitle}>Featured Products</h2>
+      <div style={styles.productGrid}>
+        {products.filter(p => p.featured).map(product => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    </>
+  );
 
-        /* Cart Modal Styles */
-        .cart-modal {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            height: 100vh;
-            background: white;
-            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
-            z-index: 1003;
-            transition: right 0.3s ease;
-            overflow-y: auto;
-        }
-        
-        .cart-modal.open {
-            right: 0;
-        }
-        
-        .cart-header {
-            padding: 2rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .cart-header h2 {
-            color: #000;
-            margin: 0;
-        }
-        
-        .close-cart {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #6b7280;
-        }
-        
-        .cart-content {
-            padding: 1rem 2rem;
-        }
-        
-        .cart-item {
-            display: flex;
-            gap: 1rem;
-            padding: 1rem 0;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .cart-item-image {
-            width: 60px;
-            height: 60px;
-            background: #f3f4f6;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
-        
-        .cart-item-details {
-            flex: 1;
-        }
-        
-        .cart-item-name {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            font-size: 0.875rem;
-        }
-        
-        .cart-item-price {
-            color: #ea580c;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        .cart-item-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .qty-btn {
-            background: #f3f4f6;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        .qty-btn:hover {
-            background: #ea580c;
-            color: white;
-        }
-        
-        .qty-display {
-            padding: 0.25rem 0.75rem;
-            background: #f9fafb;
-            border-radius: 4px;
-            font-weight: 600;
-            min-width: 40px;
-            text-align: center;
-        }
-        
-        .remove-item {
-            background: #fee2e2;
-            color: #dc2626;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            margin-left: 0.5rem;
-        }
-        
-        .cart-summary {
-            border-top: 2px solid #e5e7eb;
-            padding: 2rem;
-            margin-top: 1rem;
-        }
-        
-        .cart-total {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
-        
-        .checkout-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
-            color: white;
-            border: none;
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 0.5rem;
-        }
-        
-        .clear-cart-btn {
-            width: 100%;
-            background: none;
-            color: #6b7280;
-            border: 1px solid #e5e7eb;
-            padding: 0.75rem;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .empty-cart {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: #6b7280;
-        }
-        
-        .empty-cart-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Checkout Modal Styles */
-        .checkout-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0,0,0,0.5);
-            z-index: 1004;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        
-        .checkout-content {
-            background: white;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border-radius: 1rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-        
-        .checkout-header {
-            padding: 2rem 2rem 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .checkout-header h2 {
-            color: #000;
-            margin: 0;
-        }
-        
-        .checkout-body {
-            padding: 2rem;
-        }
-        
-        .checkout-section {
-            margin-bottom: 2rem;
-        }
-        
-        .checkout-section h3 {
-            color: #374151;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #374151;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: #ea580c;
-        }
-        
-        .form-input.required {
-            border-left: 4px solid #ea580c;
-        }
-        
-        .order-summary {
-            background: #f9fafb;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .order-item:last-child {
-            border-bottom: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #ea580c;
-        }
-        
-        .payment-instructions {
-            background: #fef3c7;
-            border: 2px solid #f59e0b;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            margin: 1rem 0;
-        }
-        
-        .payment-instructions h4 {
-            color: #92400e;
-            margin-bottom: 1rem;
-        }
-        
-        .payment-detail {
-            background: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin: 0.5rem 0;
-            border-left: 4px solid #ea580c;
-        }
-        
-        .payment-detail strong {
-            color: #ea580c;
-        }
-        
-        .order-confirmation {
-            text-align: center;
-            padding: 2rem;
-        }
-        
-        .order-number {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #ea580c;
-            margin: 1rem 0;
-        }
-        
-        .order-status {
-            background: #fef3c7;
-            color: #92400e;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            display: inline-block;
-            font-weight: 600;
-            margin: 1rem 0;
-        }
-
-        /* Admin Order Management */
-        .orders-container {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            margin: 2rem 0;
-        }
-        
-        .orders-header {
-            padding: 2rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .order-card {
-            border-bottom: 1px solid #f3f4f6;
-            padding: 1.5rem 2rem;
-        }
-        
-        .order-card:last-child {
-            border-bottom: none;
-        }
-        
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        
-        .order-id {
-            font-weight: bold;
-            color: #ea580c;
-        }
-        
-        .order-status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 15px;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-confirmed {
-            background: #dcfce7;
-            color: #166534;
-        }
-        
-        .status-completed {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .order-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-        
-        .order-info {
-            background: #f9fafb;
-            padding: 1rem;
-            border-radius: 0.5rem;
-        }
-        
-        .order-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        
-        .action-btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .btn-confirm {
-            background: #16a34a;
-            color: white;
-        }
-        
-        .btn-complete {
-            background: #2563eb;
-            color: white;
-        }
-        
-        .btn-cancel {
-            background: #dc2626;
-            color: white;
-        }
-        
-        /* Footer */
-        .footer {
-            background: linear-gradient(135deg, #000000 0%, #1f2937 100%);
-            color: white;
-            padding: 3rem 1rem;
-            margin-top: 4rem;
-            text-align: center;
-        }
-        
-        .footer h3 {
-            color: #ea580c;
-            margin-bottom: 1rem;
-        }
-        
-        .payment-info {
-            background-color: rgba(234, 88, 12, 0.1);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .payment-info p {
-            color: #ea580c;
-            font-size: 0.875rem;
-            margin: 0;
-        }
-        
-        /* Admin Login Modal */
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 999;
-            display: none;
-        }
-        
-        .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 3rem;
-            border-radius: 1rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            z-index: 1002;
-            min-width: 400px;
-            display: none;
-        }
-        
-        .modal h2 {
-            text-align: center;
-            margin-bottom: 2rem;
-            color: #000;
-        }
-        
-        .modal input {
-            width: 100%;
-            padding: 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.5rem;
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-            text-align: center;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .button-secondary {
-            background-color: white;
-            color: #ea580c;
-            border: 2px solid #ea580c;
-            padding: 0.875rem 2rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .admin-notice {
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: #16a34a;
-            color: white;
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            font-weight: bold;
-            z-index: 1000;
-            display: none;
-        }
-        
-        .admin-access {
-            background: none;
-            border: none;
-            color: #4b5563;
-            font-size: 0.7rem;
-            margin-top: 0.5rem;
-            opacity: 0.5;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        /* IMPROVED: Responsive Design */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .nav {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .hero h1 {
-                font-size: 2rem;
-            }
-            
-            .hero p {
-                font-size: 1rem;
-            }
-            
-            .category-grid,
-            .product-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .product-card {
-                min-height: 400px;
-            }
-            
-            .product-description {
-                font-size: 0.8rem;
-                line-height: 1.4;
-                min-height: 2rem;
-            }
-            
-            .product-name {
-                font-size: 1.1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Admin Status Notice -->
-        <div id="adminNotice" class="admin-notice">
-            ✓ Authenticated as Admin
+  const renderShop = () => {
+    const filtered = getFilteredProducts();
+    
+    return (
+      <>
+        <h2 style={styles.sectionTitle}>
+          {selectedCategory === 'all' ? 'All Products' : 
+           categories.find(c => c.id === selectedCategory)?.name}
+        </h2>
+        
+        <div style={styles.filterBar}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <select 
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              style={styles.select}
+            >
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+          
+          <span style={{ color: theme.mediumGray, fontWeight: '500' }}>
+            {filtered.length} products found
+          </span>
         </div>
+        
+        <div style={styles.productGrid}>
+          {filtered.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+        
+        {filtered.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '4rem', color: theme.mediumGray }}>
+            <h3>No products found</h3>
+            <p>Try adjusting your search or filter criteria</p>
+          </div>
+        )}
+      </>
+    );
+  };
 
-        <!-- Admin Login Modal -->
-        <div id="modalBackdrop" class="modal-backdrop"></div>
-        <div id="adminModal" class="modal">
-            <h2>🔐 Admin Login</h2>
-            <input type="password" id="adminPassword" placeholder="Enter admin password" autocomplete="current-password">
-            <div class="modal-buttons">
-                <button class="button-secondary" onclick="closeAdminModal()">Cancel</button>
-                <button class="button" onclick="adminLogin()">Login</button>
-            </div>
-            <p style="font-size: 0.8rem; color: #6b7280; text-align: center; margin-top: 1rem; margin-bottom: 0;">
-                Tip: Press Ctrl+Shift+A to open this login
+  const renderCheckout = () => {
+    if (orderConfirmed && currentOrder) {
+      return (
+        <div style={styles.checkoutBox}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
+            <h2 style={{ fontSize: '2.5rem', color: theme.success, margin: '0 0 1rem 0', fontWeight: 'bold' }}>
+              Order Confirmed!
+            </h2>
+            <p style={{ fontSize: '1.125rem', color: theme.mediumGray }}>
+              Thank you for your order! We will process it once we confirm your mobile money payment.
             </p>
+          </div>
+
+          <div style={styles.orderSummary}>
+            <h3 style={{ color: theme.black, marginBottom: '1.5rem' }}>Order Summary</h3>
+          
+          {cartItems.map(item => (
+            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span>{item.name} × {item.quantity}</span>
+              <span>GH₵ {(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+          ))}
+          
+          <hr style={{ margin: '1rem 0' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span>Subtotal</span>
+            <span>GH₵ {getTotalPrice().toFixed(2)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span>Delivery</span>
+            <span>
+              {customerInfo.region 
+                ? `GH₵ ${getDeliveryFee(customerInfo.region).toFixed(2)}`
+                : 'Select region'
+              }
+            </span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.125rem' }}>
+            <span>Total</span>
+            <span>
+              GH₵ {customerInfo.region 
+                ? (getTotalPrice() + getDeliveryFee(customerInfo.region)).toFixed(2)
+                : getTotalPrice().toFixed(2)
+              }
+            </span>
+          </div>
         </div>
 
-        <!-- Cart Modal -->
-        <div id="cartModal" class="cart-modal">
-            <div class="cart-header">
-                <h2>🛒 Shopping Cart</h2>
-                <button class="close-cart" onclick="closeCart()">&times;</button>
-            </div>
-            <div class="cart-content" id="cartContent">
-                <!-- Cart items will be loaded here -->
-            </div>
+        <div style={{ 
+          background: `linear-gradient(135deg, ${theme.primaryLight} 0%, ${theme.primary} 100%)`,
+          padding: '1.5rem', 
+          borderRadius: '1rem', 
+          marginBottom: '2rem',
+          color: theme.white
+        }}>
+          <h4 style={{ marginBottom: '1rem' }}>Payment Method</h4>
+          <p style={{ marginBottom: '0.5rem' }}>
+            After placing your order, you will receive mobile money payment instructions.
+          </p>
+          <p style={{ fontSize: '0.875rem' }}>
+            We accept MTN Mobile Money, Vodafone Cash, and AirtelTigo Money.
+          </p>
         </div>
 
-        <!-- Checkout Modal -->
-        <div id="checkoutModal" class="checkout-modal">
-            <div class="checkout-content">
-                <div class="checkout-header">
-                    <h2>📋 Checkout</h2>
-                    <button class="close-cart" onclick="closeCheckout()">&times;</button>
-                </div>
-                <div class="checkout-body" id="checkoutBody">
-                    <!-- Checkout content will be loaded here -->
-                </div>
-            </div>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            style={styles.buttonSecondary}
+            onClick={() => setCurrentView('shop')}
+          >
+            Back to Shop
+          </button>
+          <button 
+            style={styles.button}
+            onClick={submitOrder}
+          >
+            Place Order
+          </button>
         </div>
+      </div>
+    );
+  };
 
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo" onclick="showHome()">
-                    <div class="logo-custom">gh</div>
-                    <span class="logo-text">GHHomegoods</span>
-                </div>
-                
-                <nav class="nav">
-                    <ul class="nav-list">
-                        <li><button class="nav-button active" id="homeBtn" onclick="showHome()">Home</button></li>
-                        <li><button class="nav-button" id="shopBtn" onclick="showShop()">Shop</button></li>
-                        <li><button class="nav-button hidden" id="adminBtn" onclick="showAdmin()">Admin (<span id="adminOrderCount">0</span>)</button></li>
-                        <li><button class="nav-button hidden" id="logoutBtn" onclick="adminLogout()" style="background-color: rgba(220, 38, 38, 0.2); border: 1px solid rgba(220, 38, 38, 0.5);">Logout</button></li>
-                    </ul>
-                    
-                    <button class="cart-button" onclick="showCart()">
-                        Cart
-                        <span class="cart-badge hidden" id="cartBadge">0</span>
-                    </button>
-                </nav>
+  return (
+    <div style={styles.container}>
+      {showCartPreview && (
+        <div style={styles.cartPreview}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ 
+              width: '12px', 
+              height: '12px', 
+              backgroundColor: theme.success, 
+              borderRadius: '50%', 
+              marginRight: '0.75rem' 
+            }}></div>
+            <span style={{ fontWeight: 'bold', color: theme.success }}>
+              Added to cart!
+            </span>
+          </div>
+          <p style={{ fontSize: '14px', color: theme.mediumGray }}>
+            {getTotalItems()} items in your cart
+          </p>
+        </div>
+      )}
+
+      <header style={styles.header}>
+        <div style={styles.headerContent}>
+          <h1 
+            style={styles.logo} 
+            onClick={() => setCurrentView('home')}
+          >
+            GHHomegoods
+          </h1>
+          
+          <div style={styles.nav}>
+            <ul style={styles.navList}>
+              <li>
+                <a 
+                  style={{
+                    ...styles.navLink,
+                    ...(currentView === 'home' ? styles.navLinkActive : {})
+                  }}
+                  onClick={() => setCurrentView('home')}
+                >
+                  Home
+                </a>
+              </li>
+              <li>
+                <a 
+                  style={{
+                    ...styles.navLink,
+                    ...(currentView === 'shop' ? styles.navLinkActive : {})
+                  }}
+                  onClick={() => setCurrentView('shop')}
+                >
+                  Shop
+                </a>
+              </li>
+            </ul>
+            
+            {currentView === 'shop' && (
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={styles.searchBar}
+              />
+            )}
+            
+            <button 
+              style={styles.cartButton} 
+              onClick={() => setShowCart(true)}
+            >
+              Cart
+              {getTotalItems() > 0 && (
+                <span style={styles.cartBadge}>{getTotalItems()}</span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {showCart && (
+        <>
+          <div style={styles.backdrop} onClick={() => setShowCart(false)}></div>
+          <div style={styles.cartOverlay}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ color: theme.black, margin: 0 }}>Shopping Cart</h2>
+              <button 
+                onClick={() => setShowCart(false)}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  fontSize: '24px', 
+                  cursor: 'pointer',
+                  color: theme.mediumGray
+                }}
+              >
+                ×
+              </button>
             </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="main">
-            <!-- Home Page -->
-            <div id="homePage">
-                <div class="hero">
-                    <h1>Welcome to GHHomegoods</h1>
-                    <p>Your trusted source for baby care, household essentials, food & beverages, and personal care products. Quality brands at wholesale prices delivered to your door.</p>
-                    <button class="button" onclick="showShop()">Shop Now</button>
-                </div>
-                
-                <h2 class="section-title">Shop by Category</h2>
-                <div class="category-grid">
-                    <div class="category-card" onclick="showShop('baby-care')">
-                        <span class="category-icon">👶</span>
-                        <h3>Baby Care</h3>
-                        <p>Browse our baby care products</p>
-                    </div>
-                    <div class="category-card" onclick="showShop('food-beverages')">
-                        <span class="category-icon">🍎</span>
-                        <h3>Food & Beverages</h3>
-                        <p>Browse our food & beverages products</p>
-                    </div>
-                    <div class="category-card" onclick="showShop('cleaning-household')">
-                        <span class="category-icon">🧽</span>
-                        <h3>Cleaning & Household</h3>
-                        <p>Browse our cleaning & household products</p>
-                    </div>
-                    <div class="category-card" onclick="showShop('personal-care')">
-                        <span class="category-icon">🧴</span>
-                        <h3>Personal Care</h3>
-                        <p>Browse our personal care products</p>
-                    </div>
-                    <div class="category-card" onclick="showShop('storage-organization')">
-                        <span class="category-icon">📦</span>
-                        <h3>Storage & Organization</h3>
-                        <p>Browse our storage & organization products</p>
-                    </div>
-                </div>
-                
-                <h2 class="section-title">Featured Products</h2>
-                <div class="product-grid" id="featuredProducts">
-                    <!-- Featured products will be loaded here -->
-                </div>
-                
-                <!-- Order History Button -->
-                <div style="text-align: center; margin: 2rem 0;">
-                    <button class="button-secondary" onclick="viewOrderHistory()" style="margin-right: 1rem;">
-                        📦 View My Orders
-                    </button>
-                    <button class="button-secondary" onclick="clearAllData()" style="background: #dc2626; color: white; border-color: #dc2626;">
-                        🧹 Clear All Data
-                    </button>
-                </div>
-            </div>
-
-            <!-- Shop Page -->
-            <div id="shopPage" class="hidden">
-                <h2 class="section-title">All Products</h2>
-                
-                <!-- Search Section -->
-                <div class="search-section">
-                    <div class="search-container">
-                        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search products... (Press Ctrl+K to focus)">
-                        <div class="search-filters">
-                            <button class="filter-btn active" onclick="filterByCategory('all')">All</button>
-                            <button class="filter-btn" onclick="filterByCategory('baby-care')">Baby Care</button>
-                            <button class="filter-btn" onclick="filterByCategory('food-beverages')">Food & Beverages</button>
-                            <button class="filter-btn" onclick="filterByCategory('cleaning')">Cleaning</button>
-                            <button class="filter-btn" onclick="filterByCategory('personal-care')">Personal Care</button>
-                        </div>
-                    </div>
-                    <div class="search-results" id="searchResults"></div>
-                </div>
-                
-                <div class="product-grid" id="allProducts">
-                    <!-- All products will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Admin Page -->
-            <div id="adminPage" class="hidden">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h2 class="section-title" style="margin-bottom: 0;">Admin Dashboard</h2>
-                </div>
-                
-                <div style="background-color: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 style="color: #000; margin: 0;">📦 Product Management (<span id="productCount">8</span> products)</h3>
-                        <button class="button-secondary" id="refreshBtn" onclick="loadProductsFromGoogleSheets()">Refresh Products</button>
-                    </div>
-                    <div style="background-color: #fed7aa; padding: 1rem; border-radius: 0.5rem;">
-                        <p style="margin: 0; font-size: 0.9rem; color: #000;">
-                            📊 Configure your Google Sheets CSV URL in the code to automatically load products and images.
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="orders-container">
-                    <div class="orders-header">
-                        <h3 style="color: #000; margin: 0;">📋 Order Management (<span id="orderCount">0</span> orders)</h3>
-                        <div style="display: flex; gap: 1rem;">
-                            <button class="button-secondary" onclick="refreshOrders()">Refresh Orders</button>
-                            <button class="button-secondary" onclick="clearAllData()">Clear All Data</button>
-                        </div>
-                    </div>
-                    <div id="ordersContainer">
-                        <!-- Orders will be loaded here -->
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <div style="max-width: 1200px; margin: 0 auto;">
-                <h3>GHHomegoods</h3>
-                <p style="color: #9ca3af; margin-bottom: 2rem;">
-                    Your trusted source for quality household essentials, baby care & personal care products
+            
+            {cartItems.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🛒</div>
+                <p style={{ color: theme.mediumGray, marginBottom: '2rem' }}>
+                  Your cart is empty
                 </p>
-                <div style="margin-bottom: 2rem;">
-                    <p style="color: #9ca3af;">
-                        📞 +233 20 123 4567 | 📧 orders@ghhomegoods.com
-                    </p>
-                    <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 0.5rem;">
-                        🚚 Free delivery in Greater Accra for orders over GH₵200
-                    </p>
+                <button 
+                  style={styles.button}
+                  onClick={() => {setShowCart(false); setCurrentView('shop');}}
+                >
+                  Start Shopping
+                </button>
+              </div>
+            ) : (
+              <>
+                {cartItems.map(item => (
+                  <div key={item.id} style={styles.cartItem}>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: '0 0 0.5rem 0', color: theme.black }}>
+                        {item.name}
+                      </h4>
+                      <p style={{ margin: 0, color: theme.primary, fontWeight: 'bold' }}>
+                        GH₵ {item.price.toFixed(2)}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <button 
+                        onClick={() => removeFromCart(item.id)}
+                        style={styles.quantityButton}
+                      >
+                        -
+                      </button>
+                      <span style={{ 
+                        minWidth: '24px', 
+                        textAlign: 'center', 
+                        fontWeight: 'bold',
+                        color: theme.black
+                      }}>
+                        {item.quantity}
+                      </span>
+                      <button 
+                        onClick={() => addToCart(item)}
+                        style={styles.quantityButton}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                
+                <div style={{ 
+                  marginTop: '2rem', 
+                  padding: '1.5rem',
+                  backgroundColor: theme.primaryLight,
+                  borderRadius: '1rem'
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    fontWeight: 'bold', 
+                    fontSize: '1.25rem',
+                    marginBottom: '1.5rem',
+                    color: theme.black
+                  }}>
+                    <span>Total: GH₵ {getTotalPrice().toFixed(2)}</span>
+                  </div>
+                  
+                  <button 
+                    style={{ ...styles.button, marginBottom: '1rem' }}
+                    onClick={() => {
+                      setShowCart(false);
+                      setCurrentView('checkout');
+                      setIsCheckout(true);
+                    }}
+                  >
+                    Proceed to Checkout
+                  </button>
+                  
+                  <button 
+                    onClick={clearCart}
+                    style={{
+                      ...styles.buttonSecondary,
+                      width: '100%'
+                    }}
+                  >
+                    Clear Cart
+                  </button>
                 </div>
-                <div class="payment-info">
-                    <p>💰 We accept MTN Mobile Money, Vodafone Cash & AirtelTigo Money</p>
-                </div>
-                <p style="color: #9ca3af; font-size: 0.875rem;">
-                    © 2025 GHHomegoods. All rights reserved. | Business Registration: Coming Soon
-                </p>
-                <button class="admin-access" id="adminAccessBtn" onclick="showAdminModal()">Admin Access</button>
-            </div>
-        </footer>
+              </>
+            )}
+          </div>
+        </>
+      )}
+
+      <main style={styles.main}>
+        {currentView === 'home' && renderHome()}
+        {currentView === 'shop' && renderShop()}
+        {currentView === 'checkout' && renderCheckout()}
+      </main>
+
+      <footer style={styles.footer}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+          <h3 style={{ color: theme.primary, marginBottom: '1rem' }}>GHHomegoods</h3>
+          <p style={{ color: '#9ca3af', marginBottom: '2rem' }}>
+            Your trusted source for quality home essentials
+          </p>
+          <div style={{ marginBottom: '2rem' }}>
+            <p style={{ color: '#9ca3af' }}>
+              📞 +233 20 123 4567 | 📧 info@ghhomegoods.com
+            </p>
+          </div>
+          <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+            © 2025 GHHomegoods. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
+  );
+}
 
-    <script>
-        // Google Sheets Configuration - Using CORS proxy to avoid browser restrictions
-        const GOOGLE_SHEETS_CSV_URL = 'https://corsproxy.io/?https://docs.google.com/spreadsheets/d/14yjMXMc3AliGRemAPHU0GKPEBhW9h6Dzu6zv3kPC_fg/export?format=csv&gid=0';
+export default App;: '1.5rem' }}>Order Details</h3>
+            <p><strong>Order ID:</strong> {currentOrder.id}</p>
+            <p><strong>Total:</strong> GH₵ {currentOrder.total.toFixed(2)}</p>
+            <p><strong>Status:</strong> Pending Payment</p>
+          </div>
 
-        // Sample fallback products (used if Google Sheets unavailable)
-        const fallbackProducts = [
-            {
-                id: 1,
-                name: 'Kirkland Baby Wipes (Pack of 9)',
-                price: 75.00,
-                originalPrice: 85.00,
-                category: 'baby-care',
-                description: 'Scented baby wipes - gentle and effective',
-                imageUrl: '',
-                featured: true
-            },
-            {
-                id: 2,
-                name: 'Kirkland Diapers Size 2 (112 count)',
-                price: 240.00,
-                category: 'baby-care',
-                description: 'Premium quality diapers for babies',
-                imageUrl: '',
-                featured: true
-            },
-            {
-                id: 3,
-                name: 'Honest Kids Organic Juice (40 pack)',
-                price: 191.50,
-                originalPrice: 210.00,
-                category: 'food-beverages',
-                description: 'Organic juice drinks variety pack',
-                imageUrl: '',
-                featured: true
-            },
-            {
-                id: 4,
-                name: 'Cheerios Honey Nut Cereal (27.5 oz)',
-                price: 72.50,
-                category: 'food-beverages',
-                description: 'Delicious honey nut breakfast cereal',
-                imageUrl: '',
-                featured: true
-            },
-            {
-                id: 5,
-                name: 'Clorox Disinfecting Wipes (5 pack)',
-                price: 87.67,
-                category: 'cleaning-household',
-                description: 'Multi-surface disinfecting wipes',
-                imageUrl: '',
-                featured: true
-            },
-            {
-                id: 6,
-                name: 'Dawn Platinum Dish Soap (20.5 fl oz)',
-                price: 48.33,
-                category: 'cleaning-household',
-                description: 'Premium grease-cutting dish soap',
-                imageUrl: '',
-                featured: false
-            },
-            {
-                id: 7,
-                name: 'Dove Beauty Bar Soap (16 bars)',
-                price: 28.38,
-                category: 'personal-care',
-                description: 'Moisturizing beauty bar soap',
-                imageUrl: '',
-                featured: true
-            },
-            {
-                id: 8,
-                name: 'Crest Pro-Health Mouthwash (33.8 fl oz)',
-                price: 51.83,
-                category: 'personal-care',
-                description: 'Advanced oral care mouthwash',
-                imageUrl: '',
-                featured: true
-            }
-        ];
+          <div style={{ 
+            background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`,
+            color: theme.white,
+            padding: '2rem', 
+            borderRadius: '1rem', 
+            marginBottom: '2rem'
+          }}>
+            <h4 style={{ marginBottom: '1rem' }}>Payment Instructions</h4>
+            <p style={{ marginBottom: '1rem' }}>
+              Send GH₵ {currentOrder.total.toFixed(2)} via Mobile Money:
+            </p>
+            <p><strong>MTN:</strong> 0201234567</p>
+            <p><strong>Vodafone:</strong> 0501234567</p>
+            <p><strong>Reference:</strong> {currentOrder.id}</p>
+          </div>
 
-        // Admin configuration
-        const ADMIN_PASSWORD = 'GHAdmin2025!';
-        let isAdmin = false;
-        let currentView = 'home';
-        let products = [...fallbackProducts];
-        let isLoadingProducts = false;
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button 
+              style={styles.buttonSecondary}
+              onClick={() => {
+                setOrderConfirmed(false);
+                setCurrentOrder(null);
+                setIsCheckout(false);
+                setCurrentView('shop');
+              }}
+            >
+              Continue Shopping
+            </button>
+            <button 
+              style={styles.button}
+              onClick={() => {
+                setOrderConfirmed(false);
+                setCurrentOrder(null);
+                setIsCheckout(false);
+                setCurrentView('home');
+              }}
+            >
+              Return Home
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div style={styles.checkoutBox}>
+        <h2 style={{ margin: '0 0 2rem 0', fontSize: '2rem', color: theme.black }}>Checkout</h2>
+
+        <h3 style={{ color: theme.black, marginBottom: '1.5rem' }}>Customer Information</h3>
         
-        // Cart, Search, and Order State
-        let cart = [];
-        let filteredProducts = [];
-        let currentFilter = 'all';
-        let searchQuery = '';
-        let orders = [];
-        let orderCounter = 1000;
+        <input
+          type="text"
+          placeholder="Full Name *"
+          value={customerInfo.name}
+          onChange={(e) => handleInputChange('name', e.target.value)}
+          style={styles.input}
+        />
+        
+        <input
+          type="tel"
+          placeholder="Phone Number *"
+          value={customerInfo.phone}
+          onChange={(e) => handleInputChange('phone', e.target.value)}
+          style={styles.input}
+        />
+        
+        <input
+          type="email"
+          placeholder="Email Address"
+          value={customerInfo.email}
+          onChange={(e) => handleInputChange('email', e.target.value)}
+          style={styles.input}
+        />
+        
+        <select
+          value={customerInfo.region}
+          onChange={(e) => handleInputChange('region', e.target.value)}
+          style={styles.select}
+        >
+          <option value="">Select Region *</option>
+          {regions.map(region => (
+            <option key={region.id} value={region.id}>
+              {region.name} (GH₵ {region.fee})
+            </option>
+          ))}
+        </select>
+        
+        <input
+          type="text"
+          placeholder="City/Town *"
+          value={customerInfo.city}
+          onChange={(e) => handleInputChange('city', e.target.value)}
+          style={styles.input}
+        />
+        
+        <textarea
+          placeholder="Delivery Address *"
+          value={customerInfo.address}
+          onChange={(e) => handleInputChange('address', e.target.value)}
+          style={styles.textarea}
+        />
+        
+        <textarea
+          placeholder="Order Notes (Optional)"
+          value={customerInfo.notes}
+          onChange={(e) => handleInputChange('notes', e.target.value)}
+          style={styles.textarea}
+        />
 
-        // Mobile Money Payment Details
-        const PAYMENT_INFO = {
-            mtn: {
-                name: "GHHomegoods Store",
-                number: "0244123456",
-                network: "MTN Mobile Money"
-            },
-            vodafone: {
-                name: "GHHomegoods Store", 
-                number: "0208654321",
-                network: "Vodafone Cash"
-            },
-            airteltigo: {
-                name: "GHHomegoods Store",
-                number: "0267789012", 
-                network: "AirtelTigo Money"
-            }
-        };
-
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('GHHomegoods website loaded successfully!');
-            
-            // 📥 LOAD SAVED CART FROM LOCALSTORAGE
-            const savedCart = localStorage.getItem('gh_cart');
-            if (savedCart) {
-                try {
-                    cart = JSON.parse(savedCart);
-                    console.log('💾 Loaded cart from localStorage:', cart);
-                } catch (error) {
-                    console.log('Error loading cart from localStorage:', error);
-                    cart = [];
-                }
-            }
-            
-            // 📥 LOAD SAVED ORDERS FROM LOCALSTORAGE
-            const savedOrders = localStorage.getItem('gh_order_history');
-            if (savedOrders) {
-                try {
-                    orders = JSON.parse(savedOrders);
-                    console.log('💾 Loaded order history from localStorage:', orders);
-                } catch (error) {
-                    console.log('Error loading orders from localStorage:', error);
-                    orders = [];
-                }
-            }
-            
-            // 📥 LOAD ORDER COUNTER FROM LOCALSTORAGE
-            const savedCounter = localStorage.getItem('gh_order_counter');
-            if (savedCounter) {
-                orderCounter = parseInt(savedCounter) || 1000;
-            }
-            
-            loadProductsFromGoogleSheets();
-            
-            // Check for admin session
-            if (sessionStorage.getItem('gh_admin_session') === 'authenticated') {
-                setAdminMode(true);
-            }
-            
-            // Initialize search functionality
-            initializeSearch();
-            
-            // Initialize cart UI
-            updateCartUI();
-        });
-
-        // Initialize search functionality
-        function initializeSearch() {
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', handleSearch);
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        handleSearch();
-                    }
-                });
-            }
-        }
-
-        // ENHANCED: Better Google Drive URL conversion
-        function fixGoogleDriveUrl(url) {
-            if (!url || !url.includes('drive.google.com')) {
-                return url;
-            }
-            
-            console.log('Original URL:', url);
-            
-            // Extract file ID from various Google Drive URL formats
-            let fileId = null;
-            
-            // Format 1: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-            let match = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
-            if (match) {
-                fileId = match[1];
-            }
-            
-            // Format 2: https://drive.google.com/open?id=FILE_ID
-            if (!fileId) {
-                match = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
-                if (match) {
-                    fileId = match[1];
-                }
-            }
-            
-            // Format 3: https://drive.google.com/uc?id=FILE_ID (already correct)
-            if (!fileId) {
-                match = url.match(/uc\?id=([a-zA-Z0-9-_]+)/);
-                if (match) {
-                    return url; // Already in correct format
-                }
-            }
-            
-            if (fileId) {
-                const fixedUrl = `https://drive.google.com/uc?id=${fileId}`;
-                console.log('Fixed URL:', fixedUrl);
-                return fixedUrl;
-            }
-            
-            console.log('Could not extract file ID from:', url);
-            return url;
-        }
-
-        // DEBUG: Test if image URLs are working
-        function debugImageUrls() {
-            console.log('=== IMAGE URL DEBUGGING ===');
-            
-            products.slice(0, 5).forEach((product, index) => {
-                console.log(`Product ${index + 1}: ${product.name}`);
-                console.log(`  URL: ${product.imageUrl}`);
-                
-                if (product.imageUrl) {
-                    const img = new Image();
-                    img.onload = () => console.log(`  ✅ Image loads successfully`);
-                    img.onerror = () => console.log(`  ❌ Image failed to load - check permissions`);
-                    img.src = product.imageUrl;
-                } else {
-                    console.log(`  ⚠️ No image URL provided`);
-                }
-                console.log('---');
-            });
-        }
-
-        // IMPROVED: Better CSV line parsing to handle quoted values with commas
-        function parseCSVLine(line) {
-            const values = [];
-            let current = '';
-            let inQuotes = false;
-            let i = 0;
-            
-            while (i < line.length) {
-                const char = line[i];
-                
-                if (char === '"') {
-                    // Handle escaped quotes ("") within quoted strings
-                    if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
-                        current += '"';
-                        i += 2; // Skip both quotes
-                        continue;
-                    } else {
-                        inQuotes = !inQuotes;
-                    }
-                } else if (char === ',' && !inQuotes) {
-                    values.push(current.trim().replace(/^"|"$/g, '')); // Remove surrounding quotes
-                    current = '';
-                } else {
-                    current += char;
-                }
-                i++;
-            }
-            
-            // Add the last value
-            values.push(current.trim().replace(/^"|"$/g, ''));
-            
-            return values;
-        }
-
-        // ENHANCED: Load products from Google Sheets with better debugging
-        async function loadProductsFromGoogleSheets() {
-            const corsProxies = [
-                'https://api.allorigins.win/raw?url=',
-                'https://corsproxy.io/?',
-                'https://cors-anywhere.herokuapp.com/',
-                '' // Direct attempt
-            ];
-            
-            const baseUrl = 'https://docs.google.com/spreadsheets/d/14yjMXMc3AliGRemAPHU0GKPEBhW9h6Dzu6zv3kPC_fg/export?format=csv&gid=0';
-
-            setLoadingState(true);
-            
-            for (let i = 0; i < corsProxies.length; i++) {
-                const proxy = corsProxies[i];
-                const url = proxy + encodeURIComponent(baseUrl);
-                
-                try {
-                    console.log(`Attempting to load from: ${proxy ? 'Proxy ' + (i+1) : 'Direct'}`);
-                    console.log(`URL: ${url}`);
-                    
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'text/csv,text/plain,*/*'
-                        }
-                    });
-                    
-                    console.log(`Response status: ${response.status}`);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const csvText = await response.text();
-                    console.log(`CSV data received (${csvText.length} characters)`);
-                    console.log('First 200 characters:', csvText.substring(0, 200));
-                    
-                    const parsedProducts = parseCSVProducts(csvText);
-                    
-                    if (parsedProducts.length > 0) {
-                        products = parsedProducts;
-                        console.log(`✅ SUCCESS! Loaded ${parsedProducts.length} products from Google Sheets`);
-                        
-                        // Log first few products for verification
-                        console.log("First 3 products loaded:");
-                        products.slice(0, 3).forEach((p, i) => {
-                            console.log(`${i+1}. ${p.name} - ${p.description} - GH₵${p.price}`);
-                        });
-                        
-                        showNotification(`Loaded ${parsedProducts.length} products from Google Sheets`, 'success');
-                        setLoadingState(false);
-                        loadProducts();
-                        updateProductCount();
-                        
-                        // Initialize search state
-                        filteredProducts = [...products];
-                        
-                        // Debug image URLs after loading
-                        setTimeout(() => {
-                            console.log('🖼️ Testing image URLs...');
-                            debugImageUrls();
-                        }, 1000);
-                        
-                        return; // Success, exit function
-                    } else {
-                        throw new Error('No valid products found in CSV data');
-                    }
-                    
-                } catch (error) {
-                    console.log(`❌ Attempt ${i+1} failed:`, error.message);
-                    console.log('Full error:', error);
-                    
-                    // Continue to next proxy
-                    if (i < corsProxies.length - 1) {
-                        console.log('Trying next method...');
-                        continue;
-                    }
-                }
-            }
-            
-            // All attempts failed
-            console.log('❌ All attempts failed. Using fallback products');
-            console.log('💡 Try these solutions:');
-            console.log('1. Make sure your Google Sheet is publicly accessible');
-            console.log('2. Run a local web server instead of opening file:// directly');
-            console.log('3. Upload your HTML file to a web hosting service');
-            
-            products = [...fallbackProducts];
-            showNotification('Could not load from Google Sheets. Using offline catalog.', 'warning');
-            
-            setLoadingState(false);
-            loadProducts();
-            updateProductCount();
-        }
-
-        // CORRECTED: Parse CSV data with exact column mapping for your sheet
-        function parseCSVProducts(csvText) {
-            const lines = csvText.split('\n').filter(line => line.trim());
-            if (lines.length < 2) return [];
-            
-            console.log('CSV Headers found:', lines[0]);
-            console.log('Expected columns: ID, Name, Price, Category, [Number], Description, Image_URL');
-            const products = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                
-                const values = parseCSVLine(line);
-                console.log(`Row ${i} parsed (${values.length} columns):`, values.map((v, idx) => `${idx}: "${v}"`));
-                
-                if (values.length < 6) {
-                    console.log(`Row ${i} skipped - insufficient columns (${values.length})`);
-                    continue;
-                }
-                
-                const product = {};
-                
-                try {
-                    // Based on the exact sheet structure:
-                    // A=ID, B=Name, C=Price, D=Category, E=Number, F=Description, G=Image_URL
-                    product.id = parseInt(values[0]) || i;                    // Column A: ID
-                    product.name = values[1]?.trim() || `Product ${i}`;       // Column B: Name
-                    product.price = parseFloat(values[2]) || 0;              // Column C: Price
-                    product.category = values[3]?.trim().toLowerCase() || 'general'; // Column D: Category
-                    // values[4] = Extra number (skip)                       // Column E: Skip
-                    product.description = values[5]?.trim() || product.name; // Column F: Description
-                    product.imageUrl = values[6]?.trim() || '';              // Column G: Image_URL
-                    
-                    // Clean up category (remove extra spaces/tabs)
-                    product.category = product.category.replace(/\s+/g, '-');
-                    
-                    // Fix Google Drive URLs to direct image links
-                    if (product.imageUrl) {
-                        product.imageUrl = fixGoogleDriveUrl(product.imageUrl);
-                    }
-                    
-                    // Set defaults
-                    product.inStock = true;
-                    product.featured = i <= 8; // First 8 products featured
-                    
-                    // Validate product data
-                    if (product.name && product.name.length > 1 && product.price > 0) {
-                        console.log(`✅ Product ${i}: "${product.name}" | "${product.description}" | GH₵${product.price} | Category: ${product.category}`);
-                        products.push(product);
-                    } else {
-                        console.log(`❌ Invalid product in row ${i}:`, {
-                            name: product.name,
-                            price: product.price,
-                            description: product.description
-                        });
-                    }
-                    
-                } catch (error) {
-                    console.log(`❌ Error parsing row ${i}:`, error);
-                    console.log('Raw values:', values);
-                }
-            }
-            
-            console.log(`✅ Successfully parsed ${products.length} products from Google Sheets`);
-            return products;
-        }
-
-        // Product loading functions
-        function loadProducts() {
-            const featuredContainer = document.getElementById('featuredProducts');
-            const allContainer = document.getElementById('allProducts');
-            
-            if (!featuredContainer || !allContainer) return;
-            
-            // Load featured products (always show all featured)
-            featuredContainer.innerHTML = '';
-            products.filter(p => p.featured).forEach(product => {
-                featuredContainer.innerHTML += createProductHTML(product);
-            });
-            
-            // Load all products (with current filter/search applied)
-            updateProductDisplay();
-        }
-
-        // Update product display based on current filters
-        function updateProductDisplay() {
-            const allContainer = document.getElementById('allProducts');
-            if (!allContainer) return;
-            
-            // Apply current filters and search
-            let displayProducts = [...products];
-            
-            // Apply category filter
-            if (currentFilter !== 'all') {
-                displayProducts = displayProducts.filter(product => 
-                    product.category.includes(currentFilter) || 
-                    product.category.includes(currentFilter.replace('-', ''))
-                );
-            }
-            
-            // Apply search filter
-            if (searchQuery.trim()) {
-                const query = searchQuery.toLowerCase().trim();
-                displayProducts = displayProducts.filter(product =>
-                    product.name.toLowerCase().includes(query) ||
-                    product.description.toLowerCase().includes(query) ||
-                    product.category.toLowerCase().includes(query)
-                );
-            }
-            
-            // Update display
-            allContainer.innerHTML = '';
-            if (displayProducts.length === 0) {
-                allContainer.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #6b7280;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
-                        <h3>No products found</h3>
-                        <p>Try adjusting your search terms or filters</p>
-                    </div>
-                `;
-            } else {
-                displayProducts.forEach(product => {
-                    allContainer.innerHTML += createProductHTML(product);
-                });
-            }
-            
-            // Update search results text
-            updateSearchResults(displayProducts.length);
-        }
-
-        // Handle search input
-        function handleSearch() {
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchQuery = searchInput.value;
-                updateProductDisplay();
-            }
-        }
-
-        // Filter by category
-        function filterByCategory(category) {
-            currentFilter = category;
-            
-            // Update active filter button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            updateProductDisplay();
-        }
-
-        // Update search results display
-        function updateSearchResults(count) {
-            const searchResults = document.getElementById('searchResults');
-            if (!searchResults) return;
-            
-            let message = '';
-            if (searchQuery.trim() || currentFilter !== 'all') {
-                message = `Showing ${count} product${count !== 1 ? 's' : ''}`;
-                if (searchQuery.trim()) {
-                    message += ` for "${searchQuery}"`;
-                }
-                if (currentFilter !== 'all') {
-                    message += ` in ${currentFilter.replace('-', ' ')}`;
-                }
-            }
-            searchResults.textContent = message;
-        }
-
-        Create product HTML with proper string escaping
-        function createProductHTML(product) {
-            // Escape product name and description for safe HTML insertion
-            const safeName = product.name.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-            const safeDescription = (product.description || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-            
-            const imageHTML = product.imageUrl ? 
-                `<img src="${product.imageUrl}" alt="${safeName}" style="width: 100%; height: 100%; object-fit: cover;" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                 <span style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; color: #9ca3af;">📷 Image Not Available</span>` :
-                `<span style="color: #9ca3af;">📷 No Image</span>`;
-
-            // Use full description from Google Sheets
-            const displayDescription = product.description && product.description.trim() && product.description !== product.name 
-                ? product.description 
-                : `Premium ${product.name.toLowerCase()} - Quality guaranteed`;
-
-            return `
-                <div class="product-card">
-                    <div class="product-image">
-                        ${product.originalPrice ? '<div class="sale-badge">SALE</div>' : ''}
-                        ${imageHTML}
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">${product.name}</h3>
-                        <p class="product-description" title="${safeDescription}">${displayDescription}</p>
-                        <div class="price-container">
-                            <span class="current-price">GH₵ ${product.price.toFixed(2)}</span>
-                            ${product.originalPrice ? `<span class="original-price">GH₵ ${product.originalPrice.toFixed(2)}</span>` : ''}
-                        </div>
-                        <button class="button" onclick="addToCart(${product.id})" ${!product.inStock ? 'disabled' : ''}>
-                            ${product.inStock ? 'Add to Cart' : 'Out of Stock'}
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Utility functions
-        function setLoadingState(loading) {
-            isLoadingProducts = loading;
-            const refreshBtn = document.getElementById('refreshBtn');
-            if (refreshBtn) {
-                refreshBtn.disabled = loading;
-                refreshBtn.textContent = loading ? 'Loading...' : 'Refresh Products';
-            }
-        }
-
-        function updateProductCount() {
-            const productCountEl = document.getElementById('productCount');
-            if (productCountEl) {
-                productCountEl.textContent = products.length;
-            }
-        }
-
-        function showNotification(message, type = 'info') {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 1rem 1.5rem;
-                border-radius: 0.5rem;
-                color: white;
-                font-weight: bold;
-                z-index: 10000;
-                max-width: 300px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            `;
-            
-            // Set color based on type
-            switch (type) {
-                case 'success':
-                    notification.style.backgroundColor = '#16a34a';
-                    break;
-                case 'warning':
-                    notification.style.backgroundColor = '#eab308';
-                    break;
-                case 'error':
-                    notification.style.backgroundColor = '#dc2626';
-                    break;
-                default:
-                    notification.style.backgroundColor = '#3b82f6';
-            }
-            
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            // Remove after 4 seconds
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 4000);
-        }
-
-        // Cart functions
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            
-            // Check if item already in cart
-            const existingItem = cart.find(item => item.id === productId);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    imageUrl: product.imageUrl,
-                    quantity: 1
-                });
-            }
-            
-            updateCartUI();
-            showNotification(`Added ${product.name} to cart!`, 'success');
-            console.log('Added to cart:', product.name);
-        }
-
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            updateCartUI();
-            showNotification('Item removed from cart', 'info');
-        }
-
-        function updateQuantity(productId, change) {
-            const item = cart.find(item => item.id === productId);
-            if (!item) return;
-            
-            item.quantity += change;
-            
-            if (item.quantity <= 0) {
-                removeFromCart(productId);
-            } else {
-                updateCartUI();
-            }
-        }
-
-        function clearCart() {
-            if (cart.length === 0) return;
-            
-            if (confirm('Are you sure you want to clear your cart?')) {
-                cart = [];
-                updateCartUI();
-                showNotification('Cart cleared', 'info');
-            }
-        }
-
-        function getCartTotal() {
-            return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-        }
-
-        function getCartItemCount() {
-            return cart.reduce((total, item) => total + item.quantity, 0);
-        }
-
-        function updateCartUI() {
-            updateCartBadge();
-            updateCartContent();
-            
-            // 💾 SAVE CART TO LOCALSTORAGE
-            try {
-                localStorage.setItem('gh_cart', JSON.stringify(cart));
-            } catch (error) {
-                console.log('Error saving cart to localStorage:', error);
-            }
-        }
-
-        function updateCartBadge() {
-            const cartBadge = document.getElementById('cartBadge');
-            const itemCount = getCartItemCount();
-            
-            if (itemCount > 0) {
-                cartBadge.textContent = itemCount;
-                cartBadge.classList.remove('hidden');
-            } else {
-                cartBadge.classList.add('hidden');
-            }
-        }
-
-        function updateCartContent() {
-            const cartContent = document.getElementById('cartContent');
-            if (!cartContent) return;
-            
-            if (cart.length === 0) {
-                cartContent.innerHTML = `
-                    <div class="empty-cart">
-                        <div class="empty-cart-icon">🛒</div>
-                        <h3>Your cart is empty</h3>
-                        <p>Add some products to get started!</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const cartItemsHTML = cart.map(item => `
-                <div class="cart-item">
-                    <div class="cart-item-image">
-                        ${item.imageUrl ? 
-                            `<img src="${item.imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">` :
-                            '📦'
-                        }
-                    </div>
-                    <div class="cart-item-details">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">GH₵ ${item.price.toFixed(2)}</div>
-                        <div class="cart-item-controls">
-                            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">−</button>
-                            <span class="qty-display">${item.quantity}</span>
-                            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
-                            <button class="remove-item" onclick="removeFromCart(${item.id})">Remove</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            const total = getCartTotal();
-            const itemCount = getCartItemCount();
-            
-            cartContent.innerHTML = `
-                ${cartItemsHTML}
-                <div class="cart-summary">
-                    <div class="cart-total">
-                        <span>Total (${itemCount} items):</span>
-                        <span>GH₵ ${total.toFixed(2)}</span>
-                    </div>
-                    <button class="checkout-btn" onclick="proceedToCheckout()">
-                        Proceed to Checkout
-                    </button>
-                    <button class="clear-cart-btn" onclick="clearCart()">
-                        Clear Cart
-                    </button>
-                </div>
-            `;
-        }
-
-        function showCart() {
-            const cartModal = document.getElementById('cartModal');
-            cartModal.classList.add('open');
-            updateCartContent();
-        }
-
-        function closeCart() {
-            const cartModal = document.getElementById('cartModal');
-            cartModal.classList.remove('open');
-        }
-
-        function proceedToCheckout() {
-            if (cart.length === 0) {
-                showNotification('Your cart is empty!', 'warning');
-                return;
-            }
-            
-            closeCart();
-            showCheckoutModal();
-        }
-
-        function showCheckoutModal() {
-            const checkoutModal = document.getElementById('checkoutModal');
-            const checkoutBody = document.getElementById('checkoutBody');
-            
-            const total = getCartTotal();
-            const itemCount = getCartItemCount();
-            
-            const orderSummaryHTML = cart.map(item => `
-                <div class="order-item">
-                    <span>${item.name} × ${item.quantity}</span>
-                    <span>GH₵ ${(item.price * item.quantity).toFixed(2)}</span>
-                </div>
-            `).join('');
-            
-            checkoutBody.innerHTML = `
-                <div class="checkout-section">
-                    <h3>📦 Order Summary</h3>
-                    <div class="order-summary">
-                        ${orderSummaryHTML}
-                        <div class="order-item">
-                            <span><strong>Total (${itemCount} items)</strong></span>
-                            <span><strong>GH₵ ${total.toFixed(2)}</strong></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="checkout-section">
-                    <h3>👤 Customer Information</h3>
-                    <div class="form-group">
-                        <label class="form-label">Full Name *</label>
-                        <input type="text" class="form-input required" id="customerName" placeholder="Enter your full name" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Phone Number *</label>
-                        <input type="tel" class="form-input required" id="customerPhone" placeholder="0XX XXX XXXX" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email (Optional)</label>
-                        <input type="email" class="form-input" id="customerEmail" placeholder="your.email@example.com">
-                    </div>
-                </div>
-                
-                <div class="checkout-section">
-                    <h3>📍 Delivery Information</h3>
-                    <div class="form-group">
-                        <label class="form-label">Delivery Address *</label>
-                        <input type="text" class="form-input required" id="deliveryAddress" placeholder="House number, street, area" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">City/Town *</label>
-                        <input type="text" class="form-input required" id="deliveryCity" placeholder="e.g., Accra" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Delivery Notes (Optional)</label>
-                        <input type="text" class="form-input" id="deliveryNotes" placeholder="Landmark, special instructions, etc.">
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button class="button-secondary" onclick="closeCheckout()" style="flex: 1;">
-                        ← Back to Cart
-                    </button>
-                    <button class="button" onclick="placeOrder()" style="flex: 2;">
-                        Place Order → 
-                    </button>
-                </div>
-            `;
-            
-            checkoutModal.style.display = 'flex';
-        }
-
-        function closeCheckout() {
-            const checkoutModal = document.getElementById('checkoutModal');
-            checkoutModal.style.display = 'none';
-        }
-
-        function placeOrder() {
-            // Validate required fields
-            const customerName = document.getElementById('customerName').value.trim();
-            const customerPhone = document.getElementById('customerPhone').value.trim();
-            const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
-            const deliveryCity = document.getElementById('deliveryCity').value.trim();
-            
-            if (!customerName || !customerPhone || !deliveryAddress || !deliveryCity) {
-                showNotification('Please fill in all required fields', 'warning');
-                return;
-            }
-            
-            // Validate phone number format
-            const phoneRegex = /^0\d{9}$/;
-            if (!phoneRegex.test(customerPhone.replace(/\s+/g, ''))) {
-                showNotification('Please enter a valid Ghana phone number (0XXXXXXXXX)', 'warning');
-                return;
-            }
-            
-            // Create order
-            const orderId = `GH${orderCounter++}`;
-            const order = {
-                id: orderId,
-                date: new Date().toISOString(),
-                status: 'pending',
-                customer: {
-                    name: customerName,
-                    phone: customerPhone,
-                    email: document.getElementById('customerEmail').value.trim() || 'Not provided'
-                },
-                delivery: {
-                    address: deliveryAddress,
-                    city: deliveryCity,
-                    notes: document.getElementById('deliveryNotes').value.trim() || 'None'
-                },
-                items: [...cart],
-                total: getCartTotal(),
-                itemCount: getCartItemCount()
-            };
-            
-            orders.unshift(order); // Add to beginning of array
-            
-            // 💾 SAVE ORDER HISTORY TO LOCALSTORAGE
-            try {
-                localStorage.setItem('gh_order_history', JSON.stringify(orders));
-                localStorage.setItem('gh_order_counter', orderCounter.toString());
-            } catch (error) {
-                console.log('Error saving order to localStorage:', error);
-            }
-            
-            // Update admin order display
-            updateOrderDisplay();
-            
-            // Show payment instructions
-            showPaymentInstructions(order);
-            
-            // Clear cart
-            cart = [];
-            updateCartUI(); // This will also clear localStorage cart
-        }
-
-        function showPaymentInstructions(order) {
-            const checkoutBody = document.getElementById('checkoutBody');
-            
-            checkoutBody.innerHTML = `
-                <div class="order-confirmation">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
-                    <h3>Order Placed Successfully!</h3>
-                    <div class="order-number">Order #${order.id}</div>
-                    <div class="order-status">⏳ Pending Payment</div>
-                </div>
-                
-                <div class="payment-instructions">
-                    <h4>💰 Payment Instructions</h4>
-                    <p><strong>Total Amount: GH₵ ${order.total.toFixed(2)}</strong></p>
-                    
-                    <div class="payment-detail">
-                        <strong>MTN Mobile Money:</strong><br>
-                        Send to: ${PAYMENT_INFO.mtn.number}<br>
-                        Name: ${PAYMENT_INFO.mtn.name}
-                    </div>
-                    
-                    <div class="payment-detail">
-                        <strong>Vodafone Cash:</strong><br>
-                        Send to: ${PAYMENT_INFO.vodafone.number}<br>
-                        Name: ${PAYMENT_INFO.vodafone.name}
-                    </div>
-                    
-                    <div class="payment-detail">
-                        <strong>AirtelTigo Money:</strong><br>
-                        Send to: ${PAYMENT_INFO.airteltigo.number}<br>
-                        Name: ${PAYMENT_INFO.airteltigo.name}
-                    </div>
-                    
-                    <p style="margin-top: 1rem;"><strong>Important:</strong></p>
-                    <ul style="text-align: left; margin: 0.5rem 0;">
-                        <li>Send exactly <strong>GH₵ ${order.total.toFixed(2)}</strong></li>
-                        <li>Include your order number <strong>${order.id}</strong> in the reference/note</li>
-                        <li>We will confirm your order after payment verification</li>
-                        <li>Delivery within 24-48 hours after confirmation</li>
-                    </ul>
-                </div>
-                
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button class="button" onclick="closeCheckout(); showNotification('Thank you! We will contact you after payment verification.', 'success');">
-                        I Understand - Close
-                    </button>
-                </div>
-                
-                <div style="text-align: center; margin-top: 1rem; font-size: 0.875rem; color: #6b7280;">
-                    <p>Questions? Call/WhatsApp: <strong>+233 20 123 4567</strong></p>
-                </div>
-            `;
-        }
-
-        // Order Management Functions
-        function updateOrderDisplay() {
-            const ordersContainer = document.getElementById('ordersContainer');
-            const orderCount = document.getElementById('orderCount');
-            const adminOrderCount = document.getElementById('adminOrderCount');
-            
-            if (!ordersContainer) return;
-            
-            // Update order counts in UI
-            if (orderCount) {
-                orderCount.textContent = orders.length;
-            }
-            if (adminOrderCount) {
-                adminOrderCount.textContent = orders.filter(o => o.status === 'pending').length;
-            }
-            
-            if (orders.length === 0) {
-                ordersContainer.innerHTML = `
-                    <div style="text-align: center; padding: 3rem; color: #6b7280;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
-                        <h3>No orders yet</h3>
-                        <p>Orders will appear here once customers place them</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const ordersHTML = orders.map(order => {
-                const orderDate = new Date(order.date).toLocaleString();
-                const statusClass = `status-${order.status}`;
-                const statusIcon = order.status === 'pending' ? '⏳' : 
-                                 order.status === 'confirmed' ? '✅' : '📦';
-                
-                const itemsList = order.items.map(item => 
-                    `${item.name} × ${item.quantity}`
-                ).join(', ');
-                
-                return `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="order-id">Order #${order.id}</span>
-                            <span class="order-status-badge ${statusClass}">
-                                ${statusIcon} ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                            </span>
-                        </div>
-                        
-                        <div class="order-details">
-                            <div class="order-info">
-                                <strong>Customer:</strong><br>
-                                ${order.customer.name}<br>
-                                📞 ${order.customer.phone}<br>
-                                ✉️ ${order.customer.email}
-                            </div>
-                            <div class="order-info">
-                                <strong>Delivery:</strong><br>
-                                ${order.delivery.address}<br>
-                                ${order.delivery.city}<br>
-                                ${order.delivery.notes ? `Note: ${order.delivery.notes}` : ''}
-                            </div>
-                        </div>
-                        
-                        <div class="order-info" style="margin: 1rem 0;">
-                            <strong>Items:</strong> ${itemsList}<br>
-                            <strong>Total:</strong> GH₵ ${order.total.toFixed(2)} (${order.itemCount} items)<br>
-                            <strong>Date:</strong> ${orderDate}
-                        </div>
-                        
-                        <div class="order-actions">
-                            ${order.status === 'pending' ? `
-                                <button class="action-btn btn-confirm" onclick="updateOrderStatus('${order.id}', 'confirmed')">
-                                    ✅ Confirm Payment
-                                </button>
-                                <button class="action-btn btn-cancel" onclick="cancelOrder('${order.id}')">
-                                    ❌ Cancel Order
-                                </button>
-                            ` : ''}
-                            ${order.status === 'confirmed' ? `
-                                <button class="action-btn btn-complete" onclick="updateOrderStatus('${order.id}', 'completed')">
-                                    📦 Mark as Delivered
-                                </button>
-                            ` : ''}
-                            <button class="action-btn" style="background: #6b7280; color: white;" onclick="viewOrderDetails('${order.id}')">
-                                👁️ View Details
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            ordersContainer.innerHTML = ordersHTML;
-        }
-
-        function updateOrderStatus(orderId, newStatus) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            const confirmMessages = {
-                'confirmed': 'Confirm that payment has been received for this order?',
-                'completed': 'Mark this order as delivered/completed?'
-            };
-            
-            if (confirm(confirmMessages[newStatus])) {
-                order.status = newStatus;
-                updateOrderDisplay();
-                
-                // 💾 SYNC TO LOCALSTORAGE
-                try {
-                    localStorage.setItem('gh_order_history', JSON.stringify(orders));
-                } catch (error) {
-                    console.log('Error saving order status to localStorage:', error);
-                }
-                
-                const statusMessages = {
-                    'confirmed': 'Payment confirmed! Order is ready for delivery.',
-                    'completed': 'Order marked as delivered.'
-                };
-                
-                showNotification(statusMessages[newStatus], 'success');
-            }
-        }
-
-        function cancelOrder(orderId) {
-            if (confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
-                orders = orders.filter(o => o.id !== orderId);
-                updateOrderDisplay();
-                
-                // 💾 SYNC TO LOCALSTORAGE
-                try {
-                    localStorage.setItem('gh_order_history', JSON.stringify(orders));
-                } catch (error) {
-                    console.log('Error saving orders to localStorage:', error);
-                }
-                
-                showNotification('Order cancelled successfully', 'info');
-            }
-        }
-
-        function viewOrderDetails(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            const orderDate = new Date(order.date).toLocaleString();
-            const itemsList = order.items.map(item => 
-                `${item.name} × ${item.quantity} = GH₵ ${(item.price * item.quantity).toFixed(2)}`
-            ).join('\n');
-            
-            alert(`Order Details - #${order.id}\n\n` +
-                  `Customer: ${order.customer.name}\n` +
-                  `Phone: ${order.customer.phone}\n` +
-                  `Email: ${order.customer.email}\n\n` +
-                  `Delivery Address:\n${order.delivery.address}, ${order.delivery.city}\n` +
-                  `${order.delivery.notes ? `Notes: ${order.delivery.notes}\n` : ''}\n` +
-                  `Items:\n${itemsList}\n\n` +
-                  `Total: GH₵ ${order.total.toFixed(2)}\n` +
-                  `Status: ${order.status.toUpperCase()}\n` +
-                  `Date: ${orderDate}`);
-        }
-
-        function refreshOrders() {
-            updateOrderDisplay();
-            showNotification('Orders refreshed', 'info');
-        }
-
-        // Customer Order History Functions
-        function viewOrderHistory() {
-            if (orders.length === 0) {
-                showNotification('No past orders found', 'info');
-                return;
-            }
-            
-            let message = "📦 Your Order History:\n\n";
-            orders.slice(0, 10).forEach((order, index) => { // Show last 10 orders
-                const statusIcon = order.status === 'pending' ? '⏳' : 
-                                  order.status === 'confirmed' ? '✅' : '📦';
-                message += `${statusIcon} Order #${order.id}\n`;
-                message += `   Total: GH₵${order.total.toFixed(2)} (${order.itemCount} items)\n`;
-                message += `   Status: ${order.status.toUpperCase()}\n`;
-                message += `   Date: ${new Date(order.date).toLocaleDateString()}\n\n`;
-            });
-            
-            if (orders.length > 10) {
-                message += `... and ${orders.length - 10} more orders`;
-            }
-            
-            alert(message);
-        }
-
-        function clearAllData() {
-            if (confirm('This will clear all cart items and order history. Are you sure?')) {
-                // Clear all data
-                cart = [];
-                orders = [];
-                orderCounter = 1000;
-                
-                // Clear localStorage
-                try {
-                    localStorage.removeItem('gh_cart');
-                    localStorage.removeItem('gh_order_history');
-                    localStorage.removeItem('gh_order_counter');
-                } catch (error) {
-                    console.log('Error clearing localStorage:', error);
-                }
-                
-                // Update UI
-                updateCartUI();
-                updateOrderDisplay();
-                showNotification('All data cleared successfully', 'info');
-            }
-        }
-
-        // Admin keyboard shortcut (Ctrl+Shift+A) and other shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-                e.preventDefault();
-                showAdminModal();
-            }
-            
-            // Close cart/checkout with Escape key
-            if (e.key === 'Escape') {
-                closeCart();
-                closeCheckout();
-                closeAdminModal();
-            }
-            
-            // Search shortcut (Ctrl+K or Cmd+K)
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput && !document.getElementById('shopPage').classList.contains('hidden')) {
-                    searchInput.focus();
-                }
-            }
-        });
-
-        // Close cart/checkout when clicking outside
-        document.addEventListener('click', function(e) {
-            const cartModal = document.getElementById('cartModal');
-            const checkoutModal = document.getElementById('checkoutModal');
-            const cartButton = document.querySelector('.cart-button');
-            
-            if (cartModal.classList.contains('open') && 
-                !cartModal.contains(e.target) && 
-                !cartButton.contains(e.target)) {
-                closeCart();
-            }
-            
-            if (checkoutModal.style.display === 'flex' && 
-                e.target === checkoutModal) {
-                closeCheckout();
-            }
-        });
-
-        // Navigation functions
-        function showHome() {
-            setActiveView('home');
-            document.getElementById('homePage').classList.remove('hidden');
-            document.getElementById('shopPage').classList.add('hidden');
-            document.getElementById('adminPage').classList.add('hidden');
-        }
-
-        function showShop(category = null) {
-            setActiveView('shop');
-            document.getElementById('homePage').classList.add('hidden');
-            document.getElementById('shopPage').classList.remove('hidden');
-            document.getElementById('adminPage').classList.add('hidden');
-            
-            // Initialize search if not already done
-            initializeSearch();
-            
-            // Apply category filter if specified
-            if (category) {
-                currentFilter = category;
-                // Update filter buttons
-                document.querySelectorAll('.filter-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.textContent.toLowerCase().includes(category.replace('-', ' '))) {
-                        btn.classList.add('active');
-                    }
-                });
-                updateProductDisplay();
-            }
-        }
-
-        function showAdmin() {
-            if (!isAdmin) {
-                showAdminModal();
-                return;
-            }
-            setActiveView('admin');
-            document.getElementById('homePage').classList.add('hidden');
-            document.getElementById('shopPage').classList.add('hidden');
-            document.getElementById('adminPage').classList.remove('hidden');
-            
-            // Update order display when showing admin page
-            updateOrderDisplay();
-        }
-
-        function setActiveView(view) {
-            currentView = view;
-            // Update navigation buttons
-            document.querySelectorAll('.nav-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            const viewBtn = document.getElementById(view + 'Btn');
-            if (viewBtn) {
-                viewBtn.classList.add('active');
-            }
-        }
-
-        // Admin functions
-        function showAdminModal() {
-            document.getElementById('modalBackdrop').style.display = 'block';
-            document.getElementById('adminModal').style.display = 'block';
-            document.getElementById('adminPassword').focus();
-        }
-
-        function closeAdminModal() {
-            document.getElementById('modalBackdrop').style.display = 'none';
-            document.getElementById('adminModal').style.display = 'none';
-            document.getElementById('adminPassword').value = '';
-        }
-
-        function adminLogin() {
-            const password = document.getElementById('adminPassword').value;
-            if (password === ADMIN_PASSWORD) {
-                setAdminMode(true);
-                sessionStorage.setItem('gh_admin_session', 'authenticated');
-                closeAdminModal();
-                showAdmin();
-            } else {
-                alert('Invalid admin password');
-                document.getElementById('adminPassword').value = '';
-            }
-        }
-
-        function adminLogout() {
-            setAdminMode(false);
-            sessionStorage.removeItem('gh_admin_session');
-            showHome();
-        }
-
-        function setAdminMode(admin) {
-            isAdmin = admin;
-            const adminBtn = document.getElementById('adminBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const adminNotice = document.getElementById('adminNotice');
-            const adminAccessBtn = document.getElementById('adminAccessBtn');
-            
-            if (admin) {
-                adminBtn.classList.remove('hidden');
-                logoutBtn.classList.remove('hidden');
-                adminNotice.style.display = 'block';
-                adminAccessBtn.classList.add('hidden');
-                
-                // Initialize order display for admin
-                updateOrderDisplay();
-            } else {
-                adminBtn.classList.add('hidden');
-                logoutBtn.classList.add('hidden');
-                adminNotice.style.display = 'none';
-                adminAccessBtn.classList.remove('hidden');
-            }
-        }
-
-        // Handle password input enter key
-        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                adminLogin();
-            }
-        });
-
-        // Handle modal backdrop click
-        document.getElementById('modalBackdrop').addEventListener('click', closeAdminModal);
-    </script>
-</body>
-</html>
+        <div style={styles.orderSummary}>
+          <h3 style={{ color: theme.black, marginBottom
