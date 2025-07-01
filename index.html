@@ -121,6 +121,34 @@
             border: 2px solid white;
         }
         
+        /* Connection Status Indicator */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 1001;
+            display: none;
+        }
+        
+        .connection-status.online {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .connection-status.offline {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .connection-status.testing {
+            background: #eab308;
+            color: white;
+        }
+        
         /* Loading States */
         .loading-spinner {
             display: inline-block;
@@ -1191,6 +1219,11 @@
             <div id="loadingMessage">Loading...</div>
         </div>
 
+        <!-- Connection Status Indicator -->
+        <div id="connectionStatus" class="connection-status">
+            🔗 Connected to Server
+        </div>
+
         <!-- Admin Status Notice -->
         <div id="adminNotice" class="admin-notice">
             ✓ Authenticated as Admin
@@ -1330,11 +1363,24 @@
                     <!-- Featured products will be loaded here -->
                 </div>
                 
+                <!-- Connection Testing Section -->
+                <div style="text-align: center; margin: 3rem 0; padding: 2rem; background: white; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <h3 style="color: #374151; margin-bottom: 1rem;">🔧 System Testing</h3>
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <button class="button-secondary" onclick="testConnection()">
+                            🔧 Test Connection
+                        </button>
+                        <button class="button-secondary" onclick="testProxyHealth()">
+                            🏥 Test Proxy Health
+                        </button>
+                        <button class="button-secondary" onclick="showTracking()">
+                            📦 Track My Order
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- Customer Actions -->
                 <div style="text-align: center; margin: 2rem 0;">
-                    <button class="button-secondary" onclick="showTracking()" style="margin-right: 1rem;">
-                        📦 Track My Order
-                    </button>
                     <button class="button-secondary" onclick="clearAllData()" style="background: #dc2626; color: white; border-color: #dc2626;">
                         🧹 Clear All Data
                     </button>
@@ -1437,11 +1483,12 @@
 
     <script>
         // ============================================================================
-        // CONFIGURATION - UPDATE THIS WITH YOUR GOOGLE APPS SCRIPT URL
+        // CONFIGURATION - UPDATED TO USE PHP PROXY
         // ============================================================================
         
-        // ✅ CONFIGURED: Your deployed Google Apps Script URL
-        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxejTUnbE2sDmJxmdtwb-p-Uj6c973U9Y3YNR0TuWQ9Uml2429Sq7_NLhbksA2VnyM6/exec';
+        // ✅ UPDATED: Using PHP Proxy instead of direct Google Apps Script URL
+        const PROXY_URL = 'https://ghhomegoods.com/api/proxy.php';
+        const PROXY_HEALTH_URL = 'https://ghhomegoods.com/api/proxy.php?health=1';
         
         // Google Sheets Configuration for product loading
         const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/14yjMXMc3AliGRemAPHU0GKPEBhW9h6Dzu6zv3kPC_fg/export?format=csv&gid=0';
@@ -1463,6 +1510,10 @@
         let isLoadingProducts = false;
         let isLoadingOrders = false;
         
+        // Connection state
+        let connectionStatus = 'unknown';
+        let proxyStatus = 'unknown';
+        
         // Search and filter state
         let filteredProducts = [];
         let currentFilter = 'all';
@@ -1473,17 +1524,17 @@
         const PAYMENT_INFO = {
             mtn: {
                 name: "GHHomegoods Store",
-                number: "0244123456",
+                number: "0599613762",
                 network: "MTN Mobile Money"
             },
             vodafone: {
                 name: "GHHomegoods Store", 
-                number: "0208654321",
+                number: "0205653869",
                 network: "Vodafone Cash"
             },
             airteltigo: {
                 name: "GHHomegoods Store",
-                number: "0267789012", 
+                number: "soon", 
                 network: "AirtelTigo Money"
             }
         };
@@ -1572,10 +1623,8 @@
         
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 GHHomegoods website loaded successfully!');
-            
-            // Check configuration - URL is now properly configured
-            console.log('✅ Google Apps Script URL configured successfully');
-            console.log('🔗 Backend URL:', GOOGLE_APPS_SCRIPT_URL);
+            console.log('🔗 Using PHP Proxy for improved connectivity');
+            console.log('📡 Proxy URL:', PROXY_URL);
             
             // Initialize the application
             initializeApp();
@@ -1587,6 +1636,9 @@
                 if (sessionStorage.getItem('gh_admin_session') === 'authenticated') {
                     setAdminMode(true);
                 }
+                
+                // Test proxy connection on startup
+                await testProxyHealth();
                 
                 // Load products
                 await loadProductsFromGoogleSheets();
@@ -1607,21 +1659,22 @@
             } catch (error) {
                 console.error('💥 Application initialization error:', error);
                 showNotification('Application initialization failed. Some features may not work properly.', 'error');
+                updateConnectionStatus('offline');
             }
         }
 
         // ============================================================================
-        // API COMMUNICATION FUNCTIONS
+        // PROXY COMMUNICATION FUNCTIONS
         // ============================================================================
         
         /**
-         * Make API call to Google Apps Script
+         * Make API call via PHP Proxy to Google Apps Script
          */
-        async function callGoogleAppsScript(action, data = {}) {
+        async function callViaProxy(action, data = {}) {
             try {
-                console.log(`📡 API Call: ${action}`, data);
+                console.log(`📡 Proxy API Call: ${action}`, data);
                 
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                const response = await fetch(PROXY_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1637,34 +1690,114 @@
                 }
                 
                 const result = await response.json();
-                console.log(`📡 API Response: ${action}`, result);
+                console.log(`📡 Proxy Response: ${action}`, result);
                 
                 if (!result.success) {
                     throw new Error(result.message || 'API call failed');
                 }
                 
+                updateConnectionStatus('online');
                 return result;
                 
             } catch (error) {
-                console.error(`💥 API Error (${action}):`, error);
+                console.error(`💥 Proxy API Error (${action}):`, error);
+                updateConnectionStatus('offline');
                 throw error;
             }
         }
         
         /**
-         * Test Google Apps Script connection
+         * Test PHP proxy connection
          */
         async function testConnection() {
             try {
-                showLoading('Testing connection...');
-                const result = await callGoogleAppsScript('verify_system');
+                showLoading('Testing connection via proxy...');
+                updateConnectionStatus('testing');
+                
+                const result = await callViaProxy('verify_system');
+                
                 hideLoading();
-                showNotification('✅ Connection successful!', 'success');
+                updateConnectionStatus('online');
+                showNotification('✅ Proxy connection successful! System is operational.', 'success');
                 return true;
+                
             } catch (error) {
                 hideLoading();
-                showNotification(`❌ Connection failed: ${error.message}`, 'error');
+                updateConnectionStatus('offline');
+                showNotification(`❌ Connection test failed: ${error.message}`, 'error');
                 return false;
+            }
+        }
+        
+        /**
+         * Test PHP proxy health endpoint
+         */
+        async function testProxyHealth() {
+            try {
+                updateConnectionStatus('testing');
+                
+                const response = await fetch(PROXY_HEALTH_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const health = await response.json();
+                console.log('🏥 Proxy Health Check:', health);
+                
+                if (health.status === 'healthy') {
+                    updateConnectionStatus('online');
+                    proxyStatus = 'healthy';
+                    showNotification('✅ Proxy is healthy and connected to Google Apps Script', 'success');
+                } else {
+                    updateConnectionStatus('offline');
+                    proxyStatus = 'unhealthy';
+                    showNotification('⚠️ Proxy is responding but backend connection issues detected', 'warning');
+                }
+                
+                return health;
+                
+            } catch (error) {
+                console.error('💥 Proxy health check failed:', error);
+                updateConnectionStatus('offline');
+                proxyStatus = 'error';
+                showNotification(`❌ Proxy health check failed: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        /**
+         * Update connection status indicator
+         */
+        function updateConnectionStatus(status) {
+            connectionStatus = status;
+            const statusEl = document.getElementById('connectionStatus');
+            
+            if (!statusEl) return;
+            
+            statusEl.className = `connection-status ${status}`;
+            
+            switch (status) {
+                case 'online':
+                    statusEl.textContent = '🟢 Connected via Proxy';
+                    statusEl.style.display = 'block';
+                    setTimeout(() => statusEl.style.display = 'none', 3000);
+                    break;
+                case 'offline':
+                    statusEl.textContent = '🔴 Connection Failed';
+                    statusEl.style.display = 'block';
+                    break;
+                case 'testing':
+                    statusEl.textContent = '🟡 Testing Connection...';
+                    statusEl.style.display = 'block';
+                    break;
+                default:
+                    statusEl.style.display = 'none';
             }
         }
 
@@ -2280,15 +2413,15 @@
                     itemCount: getCartItemCount()
                 };
                 
-                // Try to place order via Google Apps Script
+                // Try to place order via PHP Proxy
                 let orderPlaced = false;
                 
                 try {
-                    await callGoogleAppsScript('place_order', { order });
+                    await callViaProxy('place_order', { order });
                     orderPlaced = true;
-                    console.log('✅ Order placed via Google Apps Script');
+                    console.log('✅ Order placed via PHP Proxy');
                 } catch (error) {
-                    console.warn('⚠️ Google Apps Script order placement failed:', error);
+                    console.warn('⚠️ PHP Proxy order placement failed:', error);
                     showNotification('Order saved locally. Admin will process manually.', 'warning');
                 }
                 
@@ -2320,7 +2453,7 @@
         
         function showPaymentInstructions(order, orderPlaced) {
             const checkoutBody = document.getElementById('checkoutBody');
-            const status = orderPlaced ? 'Order successfully placed and saved to system!' : 'Order saved locally - will be processed manually.';
+            const status = orderPlaced ? 'Order successfully placed via secure proxy!' : 'Order saved locally - will be processed manually.';
             
             checkoutBody.innerHTML = `
                 <div class="order-confirmation">
@@ -2396,23 +2529,23 @@
                     return;
                 }
                 
-                showLoading('Looking up your order...');
+                showLoading('Looking up your order via proxy...');
                 
                 let order = null;
                 
-                // Try to lookup via Google Apps Script first
+                // Try to lookup via PHP Proxy first
                 try {
-                    const result = await callGoogleAppsScript('lookup_customer_order', {
+                    const result = await callViaProxy('lookup_customer_order', {
                         orderId: orderId,
                         phoneNumber: phoneNumber
                     });
                     
                     if (result.success && result.data.order) {
                         order = result.data.order;
-                        console.log('✅ Order found via Google Apps Script');
+                        console.log('✅ Order found via PHP Proxy');
                     }
                 } catch (error) {
-                    console.warn('⚠️ Google Apps Script lookup failed:', error);
+                    console.warn('⚠️ PHP Proxy lookup failed:', error);
                 }
                 
                 // Fallback to local orders if not found
@@ -2552,16 +2685,16 @@
         
         async function loadAdminStats() {
             try {
-                // Try to load from Google Apps Script
+                // Try to load from PHP Proxy
                 try {
-                    const result = await callGoogleAppsScript('get_admin_stats');
+                    const result = await callViaProxy('get_admin_stats');
                     if (result.success && result.data.stats) {
                         adminStats = result.data.stats;
                         updateAdminStatsDisplay();
                         return;
                     }
                 } catch (error) {
-                    console.warn('⚠️ Failed to load stats from Google Apps Script:', error);
+                    console.warn('⚠️ Failed to load stats via PHP Proxy:', error);
                 }
                 
                 // Fallback to local calculation
@@ -2635,15 +2768,15 @@
             setOrdersLoadingState(true);
             
             try {
-                // Try to load from Google Apps Script
+                // Try to load from PHP Proxy
                 try {
-                    const result = await callGoogleAppsScript('get_orders', { limit: 50 });
+                    const result = await callViaProxy('get_orders', { limit: 50 });
                     if (result.success && result.data.orders) {
                         orders = result.data.orders;
-                        console.log(`✅ Loaded ${orders.length} orders from Google Apps Script`);
+                        console.log(`✅ Loaded ${orders.length} orders via PHP Proxy`);
                     }
                 } catch (error) {
-                    console.warn('⚠️ Failed to load orders from Google Apps Script:', error);
+                    console.warn('⚠️ Failed to load orders via PHP Proxy:', error);
                 }
                 
                 updateOrderDisplay();
@@ -2658,19 +2791,19 @@
         
         async function updateOrderStatus(orderId, status, paymentMethod = '', adminNotes = '') {
             try {
-                showLoading('Updating order status...');
+                showLoading('Updating order status via proxy...');
                 
-                // Try to update via Google Apps Script
+                // Try to update via PHP Proxy
                 try {
-                    await callGoogleAppsScript('update_order_status', {
+                    await callViaProxy('update_order_status', {
                         orderId,
                         status,
                         paymentMethod,
                         adminNotes
                     });
-                    console.log(`✅ Order ${orderId} updated via Google Apps Script`);
+                    console.log(`✅ Order ${orderId} updated via PHP Proxy`);
                 } catch (error) {
-                    console.warn('⚠️ Google Apps Script update failed:', error);
+                    console.warn('⚠️ PHP Proxy update failed:', error);
                     showNotification('Updated locally - sync with Google Sheets manually', 'warning');
                 }
                 
@@ -2848,7 +2981,7 @@
         async function refreshOrders() {
             if (!isAdmin) return;
             
-            showNotification('Refreshing orders...', 'info');
+            showNotification('Refreshing orders via proxy...', 'info');
             await loadOrdersForAdmin();
             await loadAdminStats();
             showNotification('Orders refreshed successfully', 'success');
@@ -3202,7 +3335,7 @@
         
         console.log('🚀 GHHomegoods Integrated E-commerce System Loaded');
         console.log('📱 Features: Product Management, Shopping Cart, Order Processing, Admin Panel');
-        console.log('🔧 Google Apps Script Integration Ready');
+        console.log('🔧 PHP Proxy Integration for Improved Connectivity');
         console.log('✅ System Ready for Production Use');
         
     </script>
