@@ -1,0 +1,251 @@
+<?php
+/**
+ * ============================================================================
+ * GHHomegoods PHP Proxy - CORS Solution
+ * File: /ghhomegoods.com/api/proxy.php
+ * ============================================================================
+ * 
+ * This proxy forwards requests from your website to Google Apps Script,
+ * solving CORS issues while maintaining security.
+ */
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+// Your Google Apps Script URL
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxejTUnbE2sDmJxmdtwb-p-Uj6c973U9Y3YNR0TuWQ9Uml2429Sq7_NLhbksA2VnyM6/exec';
+
+// Allowed origins (your domain)
+const ALLOWED_ORIGINS = [
+    'https://ghhomegoods.com',
+    'https://www.ghhomegoods.com',
+    'http://localhost',
+    'http://127.0.0.1'
+];
+
+// Rate limiting (requests per minute per IP)
+const RATE_LIMIT = 60;
+
+// ============================================================================
+// SECURITY & CORS HEADERS
+// ============================================================================
+
+/**
+ * Set CORS headers and validate origin
+ */
+function setCorsHeaders() {
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    
+    // Check if origin is allowed
+    if (in_array($origin, ALLOWED_ORIGINS) || 
+        strpos($origin, 'localhost') !== false || 
+        strpos($origin, '127.0.0.1') !== false) {
+        header("Access-Control-Allow-Origin: " . $origin);
+    }
+    
+    header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
+    header("Access-Control-Allow-Credentials: true");
+    header("Content-Type: application/json");
+}
+
+/**
+ * Simple rate limiting
+ */
+function checkRateLimit() {
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $file = sys_get_temp_dir() . '/ghhomegoods_rate_' . md5($ip);
+    
+    $requests = [];
+    if (file_exists($file)) {
+        $requests = json_decode(file_get_contents($file), true) ?: [];
+    }
+    
+    // Remove requests older than 1 minute
+    $cutoff = time() - 60;
+    $requests = array_filter($requests, function($timestamp) use ($cutoff) {
+        return $timestamp > $cutoff;
+    });
+    
+    // Check if rate limit exceeded
+    if (count($requests) >= RATE_LIMIT) {
+        http_response_code(429);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Rate limit exceeded. Please try again later.',
+            'error_code' => 'RATE_LIMIT'
+        ]);
+        exit;
+    }
+    
+    // Add current request
+    $requests[] = time();
+    file_put_contents($file, json_encode($requests));
+}
+
+/**
+ * Validate request data
+ */
+function validateRequest($data) {
+    if (!isset($data['action'])) {
+        throw new Exception('Missing action parameter');
+    }
+    
+    $allowedActions = [
+        'place_order',
+        'update_order_status', 
+        'get_orders',
+        'get_admin_stats',
+        'get_order_by_id',
+        'lookup_customer_order',
+        'verify_system'
+    ];
+    
+    if (!in_array($data['action'], $allowedActions)) {
+        throw new Exception('Invalid action: ' . $data['action']);
+    }
+    
+    return true;
+}
+
+// ============================================================================
+// MAIN PROXY LOGIC
+// ============================================================================
+
+// Set headers
+setCorsHeaders();
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+// Only allow POST requests for API calls
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Method not allowed. Use POST.',
+        'error_code' => 'METHOD_NOT_ALLOWED'
+    ]);
+    exit;
+}
+
+try {
+    // Rate limiting
+    checkRateLimit();
+    
+    // Get request body
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Invalid JSON in request body');
+    }
+    
+    // Validate request
+    validateRequest($data);
+    
+    // Log request (optional - remove in production if not needed)
+    error_log('GHHomegoods Proxy: ' . $data['action'] . ' from ' . $_SERVER['REMOTE_ADDR']);
+    
+    // Forward request to Google Apps Script
+    $ch = curl_init();
+    
+    curl_setopt_array($ch, [
+        CURLOPT_URL => GOOGLE_APPS_SCRIPT_URL,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $input,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'User-Agent: GHHomegoods-Proxy/1.0'
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    
+    curl_close($ch);
+    
+    // Handle cURL errors
+    if ($error) {
+        throw new Exception('Connection error: ' . $error);
+    }
+    
+    // Handle HTTP errors
+    if ($httpCode !== 200) {
+        throw new Exception('Google Apps Script returned HTTP ' . $httpCode);
+    }
+    
+    // Validate response is JSON
+    $responseData = json_decode($response, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Invalid response from Google Apps Script');
+    }
+    
+    // Return successful response
+    http_response_code(200);
+    echo $response;
+    
+} catch (Exception $e) {
+    // Log error
+    error_log('GHHomegoods Proxy Error: ' . $e->getMessage());
+    
+    // Return error response
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage(),
+        'error_code' => 'PROXY_ERROR',
+        'timestamp' => date('c')
+    ]);
+}
+
+// ============================================================================
+// HEALTH CHECK ENDPOINT
+// ============================================================================
+
+/**
+ * Health check endpoint
+ * Access via: https://ghhomegoods.com/api/proxy.php?health=1
+ */
+if (isset($_GET['health'])) {
+    // Test connection to Google Apps Script
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => GOOGLE_APPS_SCRIPT_URL,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode(['action' => 'verify_system']),
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 10
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    $healthy = ($httpCode === 200 && $response);
+    
+    echo json_encode([
+        'status' => $healthy ? 'healthy' : 'unhealthy',
+        'proxy_version' => '1.0',
+        'google_apps_script' => [
+            'http_code' => $httpCode,
+            'responsive' => $healthy
+        ],
+        'timestamp' => date('c'),
+        'server' => 'GHHomegoods Proxy'
+    ]);
+    exit;
+}
+
+?>
