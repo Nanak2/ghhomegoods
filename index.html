@@ -1736,37 +1736,43 @@
             try {
                 updateConnectionStatus('testing');
                 
-                const response = await fetch(PROXY_HEALTH_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
+                // Try the health endpoint first
+                try {
+                    const response = await fetch(PROXY_HEALTH_URL, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const health = await response.json();
+                        console.log('🏥 Proxy Health Check:', health);
+                        
+                        if (health.status === 'healthy') {
+                            updateConnectionStatus('online');
+                            proxyStatus = 'healthy';
+                            showNotification('✅ Proxy is healthy and connected to Google Apps Script', 'success');
+                            return health;
+                        }
                     }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                } catch (healthError) {
+                    console.warn('⚠️ Health endpoint failed, testing main proxy...', healthError);
                 }
                 
-                const health = await response.json();
-                console.log('🏥 Proxy Health Check:', health);
+                // Fallback: Test main proxy functionality
+                const result = await callViaProxy('verify_system');
                 
-                if (health.status === 'healthy') {
-                    updateConnectionStatus('online');
-                    proxyStatus = 'healthy';
-                    showNotification('✅ Proxy is healthy and connected to Google Apps Script', 'success');
-                } else {
-                    updateConnectionStatus('offline');
-                    proxyStatus = 'unhealthy';
-                    showNotification('⚠️ Proxy is responding but backend connection issues detected', 'warning');
-                }
-                
-                return health;
+                updateConnectionStatus('online');
+                proxyStatus = 'healthy';
+                showNotification('✅ Proxy is working! (Health endpoint may be disabled)', 'success');
+                return { status: 'healthy', fallback: true };
                 
             } catch (error) {
                 console.error('💥 Proxy health check failed:', error);
                 updateConnectionStatus('offline');
                 proxyStatus = 'error';
-                showNotification(`❌ Proxy health check failed: ${error.message}`, 'error');
+                showNotification(`❌ Proxy connection failed: ${error.message}`, 'error');
                 return null;
             }
         }
@@ -1871,6 +1877,9 @@
                 
                 const products = [];
                 
+                // Log the header to understand the structure
+                console.log('📊 CSV Header:', lines[0]);
+                
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
@@ -1880,26 +1889,36 @@
                     if (values.length < 6) continue;
                     
                     try {
+                        const rawImageUrl = values[6]?.trim() || '';
+                        const processedImageUrl = fixGoogleDriveUrl(rawImageUrl);
+                        
                         const product = {
                             id: parseInt(values[0]) || i,
                             name: values[1]?.trim() || `Product ${i}`,
                             price: parseFloat(values[2]) || 0,
                             category: values[3]?.trim().toLowerCase().replace(/\s+/g, '-') || 'general',
                             description: values[5]?.trim() || values[1]?.trim() || `Quality ${values[1]?.toLowerCase()} product`,
-                            imageUrl: fixGoogleDriveUrl(values[6]?.trim()) || '',
+                            imageUrl: processedImageUrl,
                             inStock: true,
                             featured: i <= 8
                         };
                         
+                        // Add original price if available (column 7)
+                        if (values[7] && parseFloat(values[7]) > 0) {
+                            product.originalPrice = parseFloat(values[7]);
+                        }
+                        
                         if (product.name && product.name.length > 1 && product.price > 0) {
                             products.push(product);
+                            console.log(`📦 Product ${i}: ${product.name} - Image: ${processedImageUrl ? '✅' : '❌'}`);
                         }
                         
                     } catch (parseError) {
-                        console.warn(`⚠️ Error parsing product row ${i}:`, parseError);
+                        console.warn(`⚠️ Error parsing product row ${i}:`, parseError, 'Values:', values);
                     }
                 }
                 
+                console.log(`✅ Parsed ${products.length} products from CSV`);
                 return products;
                 
             } catch (error) {
@@ -1939,28 +1958,46 @@
         }
         
         function fixGoogleDriveUrl(url) {
-            if (!url || !url.includes('drive.google.com')) {
+            if (!url || typeof url !== 'string') {
+                return '';
+            }
+            
+            // Handle direct image URLs (already working)
+            if (url.includes('drive.google.com/uc?id=')) {
                 return url;
             }
             
+            // Handle sharing URLs like: https://drive.google.com/file/d/FILE_ID/view
             let fileId = null;
-            let match = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
-            if (match) {
-                fileId = match[1];
-            }
             
-            if (!fileId) {
-                match = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
-                if (match) {
+            // Try different URL patterns
+            const patterns = [
+                /\/file\/d\/([a-zA-Z0-9-_]+)/,           // /file/d/ID/
+                /[?&]id=([a-zA-Z0-9-_]+)/,               // ?id=ID or &id=ID
+                /\/d\/([a-zA-Z0-9-_]+)/,                 // /d/ID
+                /drive\.google\.com\/.*\/([a-zA-Z0-9-_]+)/ // fallback pattern
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
                     fileId = match[1];
+                    break;
                 }
             }
             
             if (fileId) {
-                return `https://drive.google.com/uc?id=${fileId}`;
+                // Convert to direct image URL
+                return `https://drive.google.com/uc?export=view&id=${fileId}`;
             }
             
-            return url;
+            // If it's already a working URL, return as-is
+            if (url.startsWith('http')) {
+                return url;
+            }
+            
+            console.warn('Could not parse Google Drive URL:', url);
+            return '';
         }
         
         function loadProducts() {
@@ -2023,11 +2060,31 @@
             const safeName = product.name.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
             const safeDescription = (product.description || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
             
-            const imageHTML = product.imageUrl ? 
-                `<img src="${product.imageUrl}" alt="${safeName}" style="width: 100%; height: 100%; object-fit: cover;" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                 <span style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; color: #9ca3af;">📷 Image Not Available</span>` :
-                `<span style="color: #9ca3af;">📷 No Image</span>`;
+            // Enhanced image handling
+            let imageHTML;
+            if (product.imageUrl && product.imageUrl.trim()) {
+                const processedUrl = fixGoogleDriveUrl(product.imageUrl.trim());
+                console.log('🖼️ Image for', product.name, ':', processedUrl);
+                
+                imageHTML = `
+                    <img src="${processedUrl}" 
+                         alt="${safeName}" 
+                         style="width: 100%; height: 100%; object-fit: cover;" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; console.log('❌ Failed to load image:', this.src);"
+                         onload="console.log('✅ Image loaded:', this.src);">
+                    <div style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; color: #9ca3af; flex-direction: column; text-align: center;">
+                        <span style="font-size: 2rem; margin-bottom: 0.5rem;">📷</span>
+                        <span style="font-size: 0.875rem;">Image Not Available</span>
+                    </div>
+                `;
+            } else {
+                imageHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #9ca3af; flex-direction: column;">
+                        <span style="font-size: 3rem; margin-bottom: 0.5rem;">📦</span>
+                        <span style="font-size: 0.875rem;">No Image</span>
+                    </div>
+                `;
+            }
 
             const displayDescription = product.description && product.description.trim() && product.description !== product.name 
                 ? product.description 
@@ -2396,7 +2453,7 @@
                     };
                 }
                 
-                // Create order object
+                // Create order object with safe defaults
                 const orderId = `GH${++orderCounter}`;
                 const order = {
                     id: orderId,
@@ -2410,7 +2467,9 @@
                     pickup: pickupInfo,
                     items: [...cart],
                     total: getCartTotal(),
-                    itemCount: getCartItemCount()
+                    itemCount: getCartItemCount(),
+                    status: 'pending',
+                    date: new Date().toISOString()
                 };
                 
                 // Try to place order via PHP Proxy
@@ -2575,13 +2634,16 @@
         function showOrderDetails(order) {
             const trackingResult = document.getElementById('trackingResult');
             
+            // Safely handle order status
+            const orderStatus = order.status || 'pending';
+            
             const statusSteps = [
                 { id: 'pending', label: 'Order Placed', icon: '📝' },
                 { id: 'confirmed', label: 'Payment Confirmed', icon: '✅' },
-                { id: 'completed', label: order.fulfillmentMethod === 'delivery' ? 'Delivered' : 'Picked Up', icon: '📦' }
+                { id: 'completed', label: (order.fulfillmentMethod || 'delivery') === 'delivery' ? 'Delivered' : 'Picked Up', icon: '📦' }
             ];
             
-            const currentIndex = statusSteps.findIndex(step => step.id === order.status);
+            const currentIndex = statusSteps.findIndex(step => step.id === orderStatus);
             
             const statusHTML = statusSteps.map((step, index) => {
                 const isCompleted = index <= currentIndex;
@@ -2596,16 +2658,24 @@
                 `;
             }).join('');
             
-            const itemsList = order.items.map(item => 
-                `${item.name} × ${item.quantity}`
-            ).join(', ');
+            const itemsList = (order.items || []).map(item => 
+                `${item.name || 'Unknown Item'} × ${item.quantity || 1}`
+            ).join(', ') || 'No items';
             
-            const fulfillmentDetails = order.fulfillmentMethod === 'delivery' 
-                ? `🚚 Delivery to: ${order.delivery.address}, ${order.delivery.city}`
-                : `🏪 Pickup: ${order.pickup.time} slot`;
+            const fulfillmentDetails = (order.fulfillmentMethod || 'delivery') === 'delivery' 
+                ? `🚚 Delivery to: ${order.delivery?.address || 'Address not specified'}${order.delivery?.city ? ', ' + order.delivery.city : ''}`
+                : `🏪 Pickup: ${order.pickup?.time || 'Time not specified'} slot`;
+            
+            const statusDisplayMap = {
+                'pending': '⏳ Pending Payment',
+                'confirmed': '✅ Payment Confirmed',
+                'completed': '📦 ' + ((order.fulfillmentMethod || 'delivery') === 'delivery' ? 'Delivered' : 'Picked Up')
+            };
+            
+            const statusDisplay = statusDisplayMap[orderStatus] || '⏳ Pending Payment';
             
             trackingResult.innerHTML = `
-                <h3>Order #${order.id}</h3>
+                <h3>Order #${order.id || 'Unknown'}</h3>
                 
                 <div class="order-status-tracker">
                     ${statusHTML}
@@ -2614,10 +2684,8 @@
                 <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
                     <div style="margin-bottom: 1rem;">
                         <strong>Status:</strong> 
-                        <span class="order-status-badge status-${order.status}">
-                            ${order.status === 'pending' ? '⏳ Pending Payment' : 
-                              order.status === 'confirmed' ? '✅ Payment Confirmed' : 
-                              '📦 ' + (order.fulfillmentMethod === 'delivery' ? 'Delivered' : 'Picked Up')}
+                        <span class="order-status-badge status-${orderStatus}">
+                            ${statusDisplay}
                         </span>
                     </div>
                     
@@ -2626,7 +2694,7 @@
                     </div>
                     
                     <div style="margin-bottom: 1rem;">
-                        <strong>Total:</strong> GH₵ ${order.total.toFixed(2)}
+                        <strong>Total:</strong> GH₵ ${(order.total || 0).toFixed(2)}
                     </div>
                     
                     <div style="margin-bottom: 1rem;">
@@ -2637,15 +2705,15 @@
                         <strong>Order Date:</strong> ${new Date(order.date || Date.now()).toLocaleDateString()}
                     </div>
                     
-                    ${order.status === 'pending' ? `
+                    ${orderStatus === 'pending' ? `
                         <div style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #f59e0b;">
                             <strong>⏳ Awaiting Payment</strong>
                             <p style="margin: 0.5rem 0 0; font-size: 0.875rem;">Please complete payment using the mobile money details provided in your order confirmation.</p>
                         </div>
-                    ` : order.status === 'confirmed' ? `
+                    ` : orderStatus === 'confirmed' ? `
                         <div style="background: #dcfce7; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #16a34a;">
                             <strong>✅ Payment Confirmed</strong>
-                            <p style="margin: 0.5rem 0 0; font-size: 0.875rem;">Your order is being prepared for ${order.fulfillmentMethod}.</p>
+                            <p style="margin: 0.5rem 0 0; font-size: 0.875rem;">Your order is being prepared for ${order.fulfillmentMethod || 'delivery'}.</p>
                         </div>
                     ` : `
                         <div style="background: #dbeafe; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #2563eb;">
@@ -2714,9 +2782,9 @@
             weekStart.setDate(today.getDate() - 7);
             
             let totalOrders = orders.length;
-            let pendingOrders = orders.filter(o => o.status === 'pending').length;
-            let confirmedOrders = orders.filter(o => o.status === 'confirmed').length;
-            let completedOrders = orders.filter(o => o.status === 'completed').length;
+            let pendingOrders = orders.filter(o => (o.status || 'pending') === 'pending').length;
+            let confirmedOrders = orders.filter(o => (o.status || 'pending') === 'confirmed').length;
+            let completedOrders = orders.filter(o => (o.status || 'pending') === 'completed').length;
             let totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
             let todayOrders = orders.filter(o => {
                 const orderDate = new Date(o.date || Date.now());
@@ -2774,6 +2842,12 @@
                     if (result.success && result.data.orders) {
                         orders = result.data.orders;
                         console.log(`✅ Loaded ${orders.length} orders via PHP Proxy`);
+                        
+                        // Debug: Log first order structure to understand the data
+                        if (orders.length > 0) {
+                            console.log('🔍 Sample order structure:', JSON.stringify(orders[0], null, 2));
+                            console.log('🔍 Status field type:', typeof orders[0].status, 'Value:', orders[0].status);
+                        }
                     }
                 } catch (error) {
                     console.warn('⚠️ Failed to load orders via PHP Proxy:', error);
@@ -2807,10 +2881,10 @@
                     showNotification('Updated locally - sync with Google Sheets manually', 'warning');
                 }
                 
-                // Update local order
+                // Update local order with safe defaults
                 const order = orders.find(o => o.id === orderId);
                 if (order) {
-                    order.status = status;
+                    order.status = status || 'pending';
                     if (paymentMethod) order.paymentMethod = paymentMethod;
                     if (adminNotes) order.adminNotes = adminNotes;
                     order.dateUpdated = new Date();
@@ -2843,7 +2917,7 @@
                 orderCount.textContent = orders.length;
             }
             if (adminOrderCount) {
-                adminOrderCount.textContent = orders.filter(o => o.status === 'pending').length;
+                adminOrderCount.textContent = orders.filter(o => String(o.status || 'pending').toLowerCase() === 'pending').length;
             }
             
             if (!ordersContainer) return;
@@ -2860,64 +2934,102 @@
             }
             
             const ordersHTML = orders.slice(0, 20).map(order => {
-                const orderDate = new Date(order.date || Date.now()).toLocaleString();
-                const statusClass = `status-${order.status}`;
-                const statusIcon = order.status === 'pending' ? '⏳' : 
-                                 order.status === 'confirmed' ? '✅' : '📦';
+                // Extra robust handling - convert everything to strings and provide defaults
+                const safeOrder = {
+                    id: String(order.id || 'Unknown'),
+                    status: String(order.status || 'pending').toLowerCase(),
+                    date: order.date || Date.now(),
+                    total: Number(order.total || 0),
+                    itemCount: Number(order.itemCount || 0),
+                    fulfillmentMethod: String(order.fulfillmentMethod || 'delivery'),
+                    customer: {
+                        name: String(order.customer?.name || 'Unknown Customer'),
+                        phone: String(order.customer?.phone || 'N/A'),
+                        email: String(order.customer?.email || 'N/A')
+                    },
+                    delivery: {
+                        address: String(order.delivery?.address || ''),
+                        city: String(order.delivery?.city || ''),
+                        notes: String(order.delivery?.notes || '')
+                    },
+                    pickup: {
+                        time: String(order.pickup?.time || ''),
+                        notes: String(order.pickup?.notes || '')
+                    },
+                    items: Array.isArray(order.items) ? order.items : []
+                };
                 
-                const itemsList = order.items.map(item => 
-                    `${item.name} × ${item.quantity}`
-                ).join(', ');
+                console.log('🔍 Processing order:', safeOrder.id, 'Status type:', typeof safeOrder.status, 'Status value:', safeOrder.status);
                 
-                const fulfillmentDetails = order.fulfillmentMethod === 'delivery' 
-                    ? `🚚 Delivery: ${order.delivery.address}, ${order.delivery.city}`
-                    : `🏪 Pickup: ${order.pickup.time} slot`;
+                const orderDate = new Date(safeOrder.date).toLocaleString();
+                const statusClass = `status-${safeOrder.status}`;
+                const statusIcon = safeOrder.status === 'pending' ? '⏳' : 
+                                 safeOrder.status === 'confirmed' ? '✅' : '📦';
+                
+                const itemsList = safeOrder.items.map(item => 
+                    `${String(item.name || 'Unknown Item')} × ${Number(item.quantity || 1)}`
+                ).join(', ') || 'No items';
+                
+                const fulfillmentDetails = safeOrder.fulfillmentMethod === 'delivery' 
+                    ? `🚚 Delivery: ${safeOrder.delivery.address}${safeOrder.delivery.city ? ', ' + safeOrder.delivery.city : ''}`
+                    : `🏪 Pickup: ${safeOrder.pickup.time || 'Time not specified'} slot`;
+                
+                // ULTRA-SAFE status text generation
+                let statusText = 'Pending';
+                try {
+                    if (safeOrder.status && typeof safeOrder.status === 'string' && safeOrder.status.length > 0) {
+                        statusText = safeOrder.status.charAt(0).toUpperCase() + safeOrder.status.slice(1);
+                    }
+                } catch (e) {
+                    console.warn('Status text error for order', safeOrder.id, ':', e);
+                    statusText = 'Unknown';
+                }
                 
                 return `
                     <div class="order-card">
                         <div class="order-header">
-                            <span class="order-id">Order #${order.id}</span>
+                            <span class="order-id">Order #${safeOrder.id}</span>
                             <span class="order-status-badge ${statusClass}">
-                                ${statusIcon} ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                ${statusIcon} ${statusText}
                             </span>
                         </div>
                         
                         <div class="order-details">
                             <div class="order-info">
                                 <strong>Customer:</strong><br>
-                                ${order.customer.name}<br>
-                                📞 ${order.customer.phone}<br>
-                                ✉️ ${order.customer.email}
+                                ${safeOrder.customer.name}<br>
+                                📞 ${safeOrder.customer.phone}<br>
+                                ✉️ ${safeOrder.customer.email}
                             </div>
                             <div class="order-info">
                                 <strong>Fulfillment:</strong><br>
                                 ${fulfillmentDetails}<br>
-                                ${order.delivery?.notes || order.pickup?.notes ? 
-                                  `<em>${order.delivery?.notes || order.pickup?.notes}</em>` : ''}
+                                ${safeOrder.delivery.notes || safeOrder.pickup.notes ? 
+                                  `<em>${safeOrder.delivery.notes || safeOrder.pickup.notes}</em>` : ''}
                             </div>
                         </div>
                         
                         <div class="order-info" style="margin: 1rem 0;">
                             <strong>Items:</strong> ${itemsList}<br>
-                            <strong>Total:</strong> GH₵ ${order.total.toFixed(2)} (${order.itemCount} items)<br>
+                            <strong>Total:</strong> GH₵ ${safeOrder.total.toFixed(2)} (${safeOrder.itemCount} items)<br>
                             <strong>Date:</strong> ${orderDate}
                         </div>
                         
                         <div class="order-actions">
-                            ${order.status === 'pending' ? `
-                                <button class="action-btn btn-confirm" onclick="confirmPayment('${order.id}')">
+                            ${safeOrder.status === 'pending' ? `
+                                <button class="action-btn btn-confirm" onclick="confirmPayment('${safeOrder.id}')">
                                     ✅ Confirm Payment
                                 </button>
-                                <button class="action-btn btn-cancel" onclick="cancelOrder('${order.id}')">
+                                <button class="action-btn btn-cancel" onclick="cancelOrder('${safeOrder.id}')">
                                     ❌ Cancel Order
                                 </button>
                             ` : ''}
-                            ${order.status === 'confirmed' ? `
-                                <button class="action-btn btn-complete" onclick="completeOrder('${order.id}')">
-                                    📦 Mark as ${order.fulfillmentMethod === 'delivery' ? 'Delivered' : 'Picked Up'}
+                            ${safeOrder.status === 'confirmed' ? `
+                                <button class="action-btn btn-complete" onclick="completeOrder('${safeOrder.id}')">
+                                    📦 Mark as ${safeOrder.fulfillmentMethod === 'delivery' ? 'Delivered' : 'Picked Up'}
                                 </button>
                             ` : ''}
-                            <button class="action-btn" style="background: #6b7280; color: white;" onclick="viewOrderDetails('${order.id}')">
+                            <button class="action-btn" style="background: #6b7280; color: white;" onclick="viewOrderDetails('${safeOrder.id}')">
                                 👁️ View Details
                             </button>
                         </div>
@@ -2937,7 +3049,7 @@
         
         function completeOrder(orderId) {
             const order = orders.find(o => o.id === orderId);
-            const fulfillmentText = order?.fulfillmentMethod === 'delivery' ? 'delivered' : 'picked up';
+            const fulfillmentText = (order?.fulfillmentMethod || 'delivery') === 'delivery' ? 'delivered' : 'picked up';
             
             if (confirm(`Mark order #${orderId} as ${fulfillmentText}?`)) {
                 updateOrderStatus(orderId, 'completed', '', `Order ${fulfillmentText} successfully`);
@@ -2958,22 +3070,22 @@
             if (!order) return;
             
             const orderDate = new Date(order.date || Date.now()).toLocaleString();
-            const itemsList = order.items.map(item => 
-                `${item.name} × ${item.quantity} = GH₵ ${(item.price * item.quantity).toFixed(2)}`
-            ).join('\n');
+            const itemsList = (order.items || []).map(item => 
+                `${item.name || 'Unknown Item'} × ${item.quantity || 1} = GH₵ ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`
+            ).join('\n') || 'No items';
             
-            const fulfillmentDetails = order.fulfillmentMethod === 'delivery' 
-                ? `Delivery Address:\n${order.delivery.address}, ${order.delivery.city}\n${order.delivery.notes ? `Notes: ${order.delivery.notes}` : ''}`
-                : `Pickup: ${order.pickup.time} slot\n${order.pickup.notes ? `Notes: ${order.pickup.notes}` : ''}`;
+            const fulfillmentDetails = (order.fulfillmentMethod || 'delivery') === 'delivery' 
+                ? `Delivery Address:\n${order.delivery?.address || 'Address not specified'}${order.delivery?.city ? ', ' + order.delivery.city : ''}\n${order.delivery?.notes ? `Notes: ${order.delivery.notes}` : ''}`
+                : `Pickup: ${order.pickup?.time || 'Time not specified'} slot\n${order.pickup?.notes ? `Notes: ${order.pickup.notes}` : ''}`;
             
             alert(`Order Details - #${order.id}\n\n` +
-                  `Customer: ${order.customer.name}\n` +
-                  `Phone: ${order.customer.phone}\n` +
-                  `Email: ${order.customer.email}\n\n` +
+                  `Customer: ${order.customer?.name || 'Unknown Customer'}\n` +
+                  `Phone: ${order.customer?.phone || 'N/A'}\n` +
+                  `Email: ${order.customer?.email || 'N/A'}\n\n` +
                   `${fulfillmentDetails}\n\n` +
                   `Items:\n${itemsList}\n\n` +
-                  `Total: GH₵ ${order.total.toFixed(2)}\n` +
-                  `Status: ${order.status.toUpperCase()}\n` +
+                  `Total: GH₵ ${(order.total || 0).toFixed(2)}\n` +
+                  `Status: ${(order.status || 'pending').toUpperCase()}\n` +
                   `${order.paymentMethod ? `Payment: ${order.paymentMethod}\n` : ''}` +
                   `Date: ${orderDate}`);
         }
@@ -3328,6 +3440,53 @@
                 modalBackdrop.addEventListener('click', closeAdminModal);
             }
         });
+
+        // ============================================================================
+        // DEBUG FUNCTIONS (for troubleshooting)
+        // ============================================================================
+        
+        /**
+         * Debug function to inspect order data - call from console
+         */
+        function debugOrders() {
+            console.log('🔍 DEBUGGING ORDERS:');
+            console.log('Total orders:', orders.length);
+            
+            orders.forEach((order, index) => {
+                console.log(`\n📋 Order ${index + 1}:`, {
+                    id: order.id,
+                    status: order.status,
+                    statusType: typeof order.status,
+                    statusLength: order.status ? order.status.length : 'N/A',
+                    customer: order.customer?.name,
+                    total: order.total
+                });
+            });
+            
+            return orders;
+        }
+        
+        /**
+         * Debug function to test image URLs - call from console
+         */
+        function debugImages() {
+            console.log('🖼️ DEBUGGING IMAGES:');
+            
+            products.slice(0, 5).forEach((product, index) => {
+                console.log(`\n📦 Product ${index + 1}:`, {
+                    name: product.name,
+                    originalUrl: product.imageUrl,
+                    hasImage: !!product.imageUrl,
+                    urlLength: product.imageUrl ? product.imageUrl.length : 0
+                });
+            });
+            
+            return products.filter(p => p.imageUrl);
+        }
+        
+        // Make debug functions globally available
+        window.debugOrders = debugOrders;
+        window.debugImages = debugImages;
 
         // ============================================================================
         // INITIALIZATION COMPLETE
