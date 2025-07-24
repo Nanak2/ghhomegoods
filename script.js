@@ -475,45 +475,26 @@ function parseCSVLine(line) {
 }
 
 function fixGoogleDriveUrl(url) {
-    if (!url || typeof url !== 'string') {
-        return '';
-    }
-    
-    // Handle direct image URLs (already working)
-    if (url.includes('drive.google.com/uc?id=')) {
-        return url;
-    }
-    
-    // Handle sharing URLs like: https://drive.google.com/file/d/FILE_ID/view
-    let fileId = null;
-    
-    // Try different URL patterns
+    if (!url || typeof url !== 'string') return '';
+
+    // Match Google Drive file ID from various URL formats
     const patterns = [
-        /\/file\/d\/([a-zA-Z0-9-_]+)/,           // /file/d/ID/
-        /[?&]id=([a-zA-Z0-9-_]+)/,               // ?id=ID or &id=ID
-        /\/d\/([a-zA-Z0-9-_]+)/,                 // /d/ID
-        /drive\.google\.com\/.*\/([a-zA-Z0-9-_]+)/ // fallback pattern
+        /\/file\/d\/([a-zA-Z0-9_-]+)/,
+        /[?&]id=([a-zA-Z0-9_-]+)/,
+        /\/d\/([a-zA-Z0-9_-]+)/,
+        /drive\.google\.com\/.*\/([a-zA-Z0-9_-]+)/
     ];
-    
+
     for (const pattern of patterns) {
         const match = url.match(pattern);
         if (match && match[1]) {
-            fileId = match[1];
-            break;
+            return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
         }
     }
-    
-    if (fileId) {
-        // Convert to direct image URL
-        return `https://drive.google.com/uc?export=view&id=${fileId}`;
-    }
-    
-    // If it's already a working URL, return as-is
-    if (url.startsWith('http')) {
-        return url;
-    }
-    
-    console.warn('Could not parse Google Drive URL:', url);
+
+    // Return original URL if it's already valid
+    if (url.startsWith('http')) return url;
+
     return '';
 }
 
